@@ -2,7 +2,6 @@ package com.anki.simple.review;
 
 import com.anki.simple.vocabulary.VocabularyCard;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "review_history")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class ReviewHistory {
 
     @Id

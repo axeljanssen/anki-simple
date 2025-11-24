@@ -1,5 +1,8 @@
 package com.anki.simple.vocabulary;
 
+import com.anki.simple.exception.CardNotFoundException;
+import com.anki.simple.exception.UnauthorizedException;
+import com.anki.simple.exception.UserNotFoundException;
 import com.anki.simple.tag.Tag;
 import com.anki.simple.tag.TagRepository;
 import com.anki.simple.tag.dto.TagResponse;
@@ -28,7 +31,7 @@ public class VocabularyService {
     @Transactional
     public VocabularyCardResponse createCard(VocabularyCardRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         VocabularyCard card = new VocabularyCard();
         card.setFront(request.getFront());
@@ -51,7 +54,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public List<VocabularyCardResponse> getAllCards(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return vocabularyRepository.findByUserId(user.getId())
                 .stream()
@@ -62,7 +65,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public List<VocabularyCardResponse> getDueCards(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return vocabularyRepository.findDueCards(user.getId(), LocalDateTime.now())
                 .stream()
@@ -73,7 +76,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public long getDueCardsCount(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return vocabularyRepository.countByUserIdAndNextReviewBefore(user.getId(), LocalDateTime.now());
     }
@@ -81,13 +84,13 @@ public class VocabularyService {
     @Transactional
     public VocabularyCardResponse updateCard(Long id, VocabularyCardRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         VocabularyCard card = vocabularyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException(id));
 
         if (!card.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized access to card");
         }
 
         card.setFront(request.getFront());
@@ -109,13 +112,13 @@ public class VocabularyService {
     @Transactional
     public void deleteCard(Long id, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         VocabularyCard card = vocabularyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException(id));
 
         if (!card.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized access to card");
         }
 
         vocabularyRepository.delete(card);

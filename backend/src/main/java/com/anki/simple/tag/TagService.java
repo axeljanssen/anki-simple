@@ -1,5 +1,9 @@
 package com.anki.simple.tag;
 
+import com.anki.simple.exception.TagAlreadyExistsException;
+import com.anki.simple.exception.TagNotFoundException;
+import com.anki.simple.exception.UnauthorizedException;
+import com.anki.simple.exception.UserNotFoundException;
 import com.anki.simple.tag.dto.TagRequest;
 import com.anki.simple.tag.dto.TagResponse;
 import com.anki.simple.user.User;
@@ -21,10 +25,10 @@ public class TagService {
     @Transactional
     public TagResponse createTag(TagRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (tagRepository.findByNameAndUserId(request.getName(), user.getId()).isPresent()) {
-            throw new RuntimeException("Tag with this name already exists");
+            throw new TagAlreadyExistsException(request.getName());
         }
 
         Tag tag = new Tag();
@@ -39,7 +43,7 @@ public class TagService {
     @Transactional(readOnly = true)
     public List<TagResponse> getAllTags(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return tagRepository.findByUserId(user.getId())
                 .stream()
@@ -50,13 +54,13 @@ public class TagService {
     @Transactional
     public void deleteTag(Long id, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tag not found"));
+                .orElseThrow(() -> new TagNotFoundException(id));
 
         if (!tag.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized access to tag");
         }
 
         tagRepository.delete(tag);

@@ -1,5 +1,8 @@
 package com.anki.simple.user;
 
+import com.anki.simple.exception.EmailAlreadyExistsException;
+import com.anki.simple.exception.UserNotFoundException;
+import com.anki.simple.exception.UsernameAlreadyExistsException;
 import com.anki.simple.security.JwtUtil;
 import com.anki.simple.user.dto.AuthResponse;
 import com.anki.simple.user.dto.LoginRequest;
@@ -21,11 +24,11 @@ public class UserService {
 
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new UsernameAlreadyExistsException(request.getUsername());
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = new User();
@@ -45,7 +48,7 @@ public class UserService {
         );
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getEmail());

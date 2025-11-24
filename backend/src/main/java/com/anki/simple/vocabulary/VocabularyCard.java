@@ -4,7 +4,6 @@ import com.anki.simple.user.User;
 import com.anki.simple.tag.Tag;
 import com.anki.simple.review.ReviewHistory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,7 +17,6 @@ import java.util.Set;
 @Table(name = "vocabulary_cards")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class VocabularyCard {
 
     @Id

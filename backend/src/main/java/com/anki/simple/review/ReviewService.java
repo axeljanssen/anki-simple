@@ -1,5 +1,8 @@
 package com.anki.simple.review;
 
+import com.anki.simple.exception.CardNotFoundException;
+import com.anki.simple.exception.UnauthorizedException;
+import com.anki.simple.exception.UserNotFoundException;
 import com.anki.simple.user.User;
 import com.anki.simple.user.UserRepository;
 import com.anki.simple.vocabulary.VocabularyCard;
@@ -23,13 +26,13 @@ public class ReviewService {
     @Transactional
     public VocabularyCardResponse reviewCard(ReviewRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         VocabularyCard card = vocabularyRepository.findById(request.getCardId())
-                .orElseThrow(() -> new RuntimeException("Card not found"));
+                .orElseThrow(() -> new CardNotFoundException(request.getCardId()));
 
         if (!card.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
+            throw new UnauthorizedException("Unauthorized access to card");
         }
 
         spacedRepetitionService.updateCardSchedule(card, request.getQuality());
