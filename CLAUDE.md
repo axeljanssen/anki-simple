@@ -16,6 +16,8 @@ mvn spring-boot:run        # Run backend server (port 8080)
 mvn test                   # Run tests
 ```
 
+See [backend/CLAUDE.md](backend/CLAUDE.md) for detailed backend documentation.
+
 ### Frontend (React + Vite)
 ```bash
 cd frontend
@@ -25,35 +27,19 @@ npm run build            # Production build
 npm run lint             # Run ESLint
 ```
 
-## Architecture
+## Architecture Overview
 
-### Backend Structure
+### Backend
+- **Spring Boot 3.2.0** with Java 17
+- **Layered architecture**: Controllers → Services → Repositories → Entities
+- **JWT authentication** with Spring Security
+- **H2 in-memory database** for development
+- **Domain modules**: `user`, `vocabulary`, `review`, `tag`
 
-The backend follows a layered architecture organized by domain features:
+📖 **For detailed backend documentation, see [backend/CLAUDE.md](backend/CLAUDE.md)**
 
-- **Domain Modules**: `user`, `vocabulary`, `review`, `tag` - each contains:
-  - Entity classes (JPA entities)
-  - Repository interfaces (Spring Data JPA)
-  - Service classes (business logic)
-  - Controller classes (REST endpoints)
-  - DTOs in `dto/` subdirectories
-
-- **Security Layer**: `security/` and `config/`
-  - JWT-based authentication with `JwtUtil` and `JwtAuthenticationFilter`
-  - `CustomUserDetailsService` for user loading
-  - `SecurityConfig` configures Spring Security with stateless sessions
-  - Public endpoints: `/api/auth/**`, `/h2-console/**`
-  - All other endpoints require JWT authentication
-
-- **Spaced Repetition**: `SpacedRepetitionService` (backend/src/main/java/com/anki/simple/review/SpacedRepetitionService.java:1)
-  - Implements SM-2 algorithm for card scheduling
-  - Quality ratings 0-5 affect ease factor, interval, and repetitions
-  - Quality < 3 resets card to 1-day interval
-  - Quality >= 3 advances interval: 1 day → 6 days → interval * ease_factor
-
-### Frontend Structure
-
-- **Routing**: React Router with protected routes via `ProtectedRoute` component
+### Frontend
+- **React Router** with protected routes via `ProtectedRoute` component
 - **Authentication**: `AuthContext` provides auth state and JWT token management
   - Token stored in localStorage
   - Axios interceptor auto-adds Bearer token to requests
@@ -63,49 +49,50 @@ The backend follows a layered architecture organized by domain features:
 - **Pages**: `Login`, `Signup`, `Dashboard`, `Review`
 - **Components**: Reusable UI components like `VocabularyList`, `VocabularyForm`
 
-### Key Data Models
+## Key Features
 
-**VocabularyCard** (backend/src/main/java/com/anki/simple/vocabulary/VocabularyCard.java:1):
-- Core fields: `front`, `back`, `exampleSentence`, `sourceLanguage`, `targetLanguage`, `audioUrl`
-- SM-2 fields: `easeFactor` (default 2.5), `intervalDays`, `repetitions`, `lastReviewed`, `nextReview`
-- Relationships: belongs to User (ManyToOne), has Tags (ManyToMany), has ReviewHistory (OneToMany)
-- Cards become "due" when `nextReview` <= current time
-
-### Database
-
-- H2 in-memory database (resets on restart)
-- H2 Console: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:ankidb`
-  - Username: `sa`, Password: (empty)
-- JPA with `ddl-auto=update` auto-creates tables from entities
-- Main tables: `vocabulary_cards`, `users`, `tags`, `review_history`, `card_tags` (join table)
+### Spaced Repetition (SM-2 Algorithm)
+- Quality ratings 0-5 affect ease factor, interval, and repetitions
+- Quality < 3 resets card to 1-day interval
+- Quality >= 3 advances interval: 1 day → 6 days → interval * ease_factor
+- Implemented in `SpacedRepetitionService`
 
 ### Authentication Flow
-
 1. User signs up/logs in via `/api/auth/signup` or `/api/auth/login`
 2. Backend returns JWT token in `AuthResponse`
 3. Frontend stores token in localStorage
 4. All subsequent requests include `Authorization: Bearer <token>` header
-5. `JwtAuthenticationFilter` validates token and sets Spring Security context
-6. JWT expires after 24 hours (configurable in application.properties)
+5. JWT expires after 24 hours
 
 ### Review System Flow
-
 1. Dashboard shows cards due count via `/api/vocabulary/due/count`
 2. Review page fetches due cards via `/api/vocabulary/due`
 3. User reviews card and submits quality rating (0-5) via `/api/review`
-4. `ReviewService` calls `SpacedRepetitionService.updateCardSchedule()`
-5. Card's SM-2 fields updated and saved to database
-6. `ReviewHistory` record created to track the review
+4. Backend updates card's SM-2 fields and saves to database
+5. `ReviewHistory` record created to track the review
 
-## Important Configuration
+## Quick Reference
 
-### Security & CORS
-- CORS configured for `http://localhost:5173` in SecurityConfig.java:56
-- JWT secret in application.properties:20 (MUST change in production)
-- CSRF disabled for stateless API
+### Database Access (Development)
+- H2 Console: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:mem:ankidb`
+- Username: `sa`, Password: (empty)
+- **Note**: In-memory database resets on application restart
 
-### Development Notes
-- Backend SQL logging enabled (`spring.jpa.show-sql=true`)
-- H2 console enabled for debugging database state
-- Frame options disabled for H2 console access
+### API Endpoints
+- **Auth**: `/api/auth/signup`, `/api/auth/login` (public)
+- **Vocabulary**: `/api/vocabulary` (CRUD operations)
+- **Review**: `/api/review` (submit review)
+- **Tags**: `/api/tags` (manage tags)
+- All endpoints except auth require JWT token
+
+### Configuration
+- Backend port: 8080
+- Frontend port: 5173
+- CORS configured for `http://localhost:5173`
+- JWT secret in `application.properties` (MUST change in production)
+
+## Development Notes
+- Backend SQL logging enabled for debugging
+- H2 console enabled for database inspection
+- Frontend uses Vite for fast development and hot module replacement
