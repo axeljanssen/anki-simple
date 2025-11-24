@@ -149,8 +149,9 @@ Each domain module follows a consistent pattern:
 ## Testing Strategy
 - Unit tests: Given-When-Then pattern with AssertJ
 - Integration tests: @SpringBootTest with Testcontainers
+- Integration tests: avoid mocks and use m2 in-memory database for testing whenever possible.
 - Mock externals with WireMock
-- Minimum coverage: 80% for business logic
+- Minimum coverage: 80% for business logic 
 
 
 ## Database Configuration
