@@ -7,6 +7,7 @@ import com.anki.simple.security.JwtUtil;
 import com.anki.simple.user.dto.AuthResponse;
 import com.anki.simple.user.dto.LoginRequest;
 import com.anki.simple.user.dto.SignupRequest;
+import com.anki.simple.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final UserMapper userMapper;
 
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -31,15 +33,13 @@ public class UserService {
             throw new EmailAlreadyExistsException(request.getEmail());
         }
 
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return userMapper.toAuthResponse(user, token);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -51,6 +51,6 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         String token = jwtUtil.generateToken(user.getUsername());
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return userMapper.toAuthResponse(user, token);
     }
 }

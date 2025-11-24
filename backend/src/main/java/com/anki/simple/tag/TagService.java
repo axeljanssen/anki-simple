@@ -6,6 +6,7 @@ import com.anki.simple.exception.UnauthorizedException;
 import com.anki.simple.exception.UserNotFoundException;
 import com.anki.simple.tag.dto.TagRequest;
 import com.anki.simple.tag.dto.TagResponse;
+import com.anki.simple.tag.mapper.TagMapper;
 import com.anki.simple.user.User;
 import com.anki.simple.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class TagService {
 
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
+    private final TagMapper tagMapper;
 
     @Transactional
     public TagResponse createTag(TagRequest request, String username) {
@@ -31,13 +33,11 @@ public class TagService {
             throw new TagAlreadyExistsException(request.getName());
         }
 
-        Tag tag = new Tag();
-        tag.setName(request.getName());
-        tag.setColor(request.getColor());
+        Tag tag = tagMapper.toEntity(request);
         tag.setUser(user);
 
         Tag savedTag = tagRepository.save(tag);
-        return new TagResponse(savedTag.getId(), savedTag.getName(), savedTag.getColor());
+        return tagMapper.toResponse(savedTag);
     }
 
     @Transactional(readOnly = true)
@@ -47,7 +47,7 @@ public class TagService {
 
         return tagRepository.findByUserId(user.getId())
                 .stream()
-                .map(tag -> new TagResponse(tag.getId(), tag.getName(), tag.getColor()))
+                .map(tagMapper::toResponse)
                 .collect(Collectors.toList());
     }
 

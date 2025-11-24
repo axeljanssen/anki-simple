@@ -7,6 +7,7 @@ import com.anki.simple.security.JwtUtil;
 import com.anki.simple.user.dto.AuthResponse;
 import com.anki.simple.user.dto.LoginRequest;
 import com.anki.simple.user.dto.SignupRequest;
+import com.anki.simple.user.mapper.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,9 @@ class UserServiceTest {
   @Mock
   private AuthenticationManager authenticationManager;
 
+  @Mock
+  private UserMapper userMapper;
+
   @InjectMocks
   private UserService userService;
 
@@ -71,11 +75,15 @@ class UserServiceTest {
   @DisplayName("Given valid signup request, when signup, then should create user and return auth response")
   void givenValidSignupRequest_whenSignup_thenShouldCreateUserAndReturnAuthResponse() {
     // Given
+    AuthResponse expectedResponse = new AuthResponse("jwt-token", "testuser", "test@example.com");
+
     when(userRepository.existsByUsername(anyString())).thenReturn(false);
     when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    when(userMapper.toEntity(any(SignupRequest.class))).thenReturn(user);
     when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
     when(userRepository.save(any(User.class))).thenReturn(user);
     when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
+    when(userMapper.toAuthResponse(any(User.class), anyString())).thenReturn(expectedResponse);
 
     // When
     AuthResponse response = userService.signup(signupRequest);
@@ -129,10 +137,13 @@ class UserServiceTest {
   @DisplayName("Given valid login request, when login, then should authenticate and return auth response")
   void givenValidLoginRequest_whenLogin_thenShouldAuthenticateAndReturnAuthResponse() {
     // Given
+    AuthResponse expectedResponse = new AuthResponse("jwt-token", "testuser", "test@example.com");
+
     when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .thenReturn(null);
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
     when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
+    when(userMapper.toAuthResponse(any(User.class), anyString())).thenReturn(expectedResponse);
 
     // When
     AuthResponse response = userService.login(loginRequest);
@@ -170,11 +181,15 @@ class UserServiceTest {
   @DisplayName("Given signup request, when password is encoded, then should use password encoder")
   void givenSignupRequest_whenPasswordEncoded_thenShouldUsePasswordEncoder() {
     // Given
+    AuthResponse expectedResponse = new AuthResponse("jwt-token", "testuser", "test@example.com");
+
     when(userRepository.existsByUsername(anyString())).thenReturn(false);
     when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    when(userMapper.toEntity(any(SignupRequest.class))).thenReturn(user);
     when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
     when(userRepository.save(any(User.class))).thenReturn(user);
     when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
+    when(userMapper.toAuthResponse(any(User.class), anyString())).thenReturn(expectedResponse);
 
     // When
     userService.signup(signupRequest);
@@ -187,10 +202,13 @@ class UserServiceTest {
   @DisplayName("Given login request, when authenticate, then should use authentication manager")
   void givenLoginRequest_whenAuthenticate_thenShouldUseAuthenticationManager() {
     // Given
+    AuthResponse expectedResponse = new AuthResponse("jwt-token", "testuser", "test@example.com");
+
     when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .thenReturn(null);
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
     when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
+    when(userMapper.toAuthResponse(any(User.class), anyString())).thenReturn(expectedResponse);
 
     // When
     userService.login(loginRequest);

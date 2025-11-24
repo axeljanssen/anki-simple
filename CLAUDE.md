@@ -32,7 +32,7 @@ npm run lint             # Run ESLint
 ## Architecture Overview
 
 ### Backend
-- **Spring Boot 3.2.0** with Java 17
+- **Spring Boot 3.4.1** with Java 21
 - **Layered architecture**: Controllers → Services → Repositories → Entities
 - **JWT authentication** with Spring Security
 - **H2 in-memory database** for development

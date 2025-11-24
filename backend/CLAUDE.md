@@ -20,12 +20,13 @@ mvn package
 
 ## Technology Stack
 
-- **Spring Boot 3.2.0** - Application framework
-- **Java 17** - Programming language
+- **Spring Boot 3.4.1** - Application framework
+- **Java 21** - Programming language
 - **Spring Data JPA** - Database access
 - **Spring Security** - Authentication & authorization
 - **JWT (jjwt 0.11.5)** - Token-based authentication
 - **H2 Database** - In-memory database (development)
+- **Flyway** - Database migration and versioning
 - **Lombok** - Reduce boilerplate code
 - **Maven** - Build tool
 
@@ -46,6 +47,9 @@ src/main/java/com/anki/simple/
 
 src/main/resources/
 ├── application.properties  # Application configuration
+├── db/
+│   └── migration/         # Flyway database migration scripts
+│       └── V1__initial_schema.sql  # Initial database schema
 └── data.sql               # Initial data (if needed)
 ```
 
@@ -60,6 +64,130 @@ Each domain module follows a consistent pattern:
 3. **Service Layer** - Business logic and transaction management
 4. **Controller Layer** - REST API endpoints
 5. **DTO Layer** - Data transfer objects for API requests/responses
+6. **Mapper Layer** - MapStruct mappers for DTO/entity conversion
+
+### MapStruct Integration
+
+MapStruct is used throughout the application for type-safe and efficient DTO-to-entity conversions, eliminating boilerplate mapping code.
+
+#### Configuration
+
+**Maven Dependencies** (pom.xml):
+```xml
+<properties>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>org.mapstruct</groupId>
+                        <artifactId>mapstruct-processor</artifactId>
+                        <version>${mapstruct.version}</version>
+                    </path>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </path>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-mapstruct-binding</artifactId>
+                        <version>${lombok-mapstruct-binding.version}</version>
+                    </path>
+                </annotationProcessorPaths>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+**Important**: The `lombok-mapstruct-binding` dependency ensures MapStruct and Lombok work together correctly. Always list MapStruct processor before Lombok in annotation processor paths.
+
+#### Mapper Creation Pattern
+
+All mappers follow this pattern:
+
+```java
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface VocabularyCardMapper {
+
+  // Entity to DTO
+  VocabularyCardResponse toResponse(VocabularyCard card);
+
+  // DTO to Entity with ignored fields
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "user", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  VocabularyCard toEntity(VocabularyCardRequest request);
+}
+```
+
+**Key Annotations**:
+- `@Mapper(componentModel = "SPRING")` - Registers mapper as Spring bean for dependency injection
+- `@Mapping(target = "...", ignore = true)` - Excludes fields from mapping (e.g., auto-generated IDs, relationships)
+- Use `default` methods for custom mapping logic
+
+#### Mapper Locations
+
+Mappers are organized by domain in `mapper` packages:
+
+- `user/mapper/UserMapper.java` - User and authentication DTOs
+- `vocabulary/mapper/VocabularyCardMapper.java` - Vocabulary card DTOs
+- `tag/mapper/TagMapper.java` - Tag DTOs
+- `review/mapper/ReviewHistoryMapper.java` - Review history creation
+
+#### Service Integration
+
+Mappers are injected into services via constructor injection (using Lombok `@RequiredArgsConstructor`):
+
+```java
+@Service
+@RequiredArgsConstructor
+public class VocabularyService {
+    private final VocabularyRepository vocabularyRepository;
+    private final VocabularyCardMapper vocabularyCardMapper;  // MapStruct mapper
+
+    public VocabularyCardResponse createCard(VocabularyCardRequest request, String username) {
+        VocabularyCard card = vocabularyCardMapper.toEntity(request);
+        // Set unmapped fields
+        card.setUser(user);
+
+        VocabularyCard savedCard = vocabularyRepository.save(card);
+        return vocabularyCardMapper.toResponse(savedCard);
+    }
+}
+```
+
+#### Benefits
+
+1. **Type Safety** - Compile-time checks prevent mapping errors
+2. **Performance** - Generates plain Java code, no reflection
+3. **Maintainability** - Centralized mapping logic, easy to update
+4. **Consistency** - Ensures uniform mapping patterns across the application
+5. **Less Boilerplate** - No manual field-by-field copying
+
+#### Best Practices
+
+- Always use `@Mapping(target = "id", ignore = true)` for entity creation to avoid ID conflicts
+- Ignore collection fields (e.g., `vocabularyCards`, `tags`) when mapping from DTOs
+- Use `default` methods for complex or custom mapping logic
+- Let services set relationship fields (e.g., `setUser()`) after mapping
+- Run `mvn clean compile` after mapper changes to regenerate implementation classes
 
 
 
@@ -176,8 +304,45 @@ Access at: `http://localhost:8080/h2-console`
 
 ### JPA Configuration
 
-- `spring.jpa.hibernate.ddl-auto=update` - Auto-creates tables from entities
+- `spring.jpa.hibernate.ddl-auto=validate` - Validates schema against entities (Flyway manages schema)
 - `spring.jpa.show-sql=true` - Logs SQL statements to console
+
+### Flyway Database Migrations
+
+Flyway manages database schema versioning and migrations automatically.
+
+**Configuration in `application.properties`:**
+```properties
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+spring.flyway.baseline-on-migrate=true
+```
+
+**Migration Files:**
+- Located in: `src/main/resources/db/migration/`
+- Naming convention: `V{version}__{description}.sql`
+- Example: `V1__initial_schema.sql`, `V2__add_user_preferences.sql`
+
+**How it works:**
+1. Flyway tracks applied migrations in `flyway_schema_history` table
+2. On startup, Flyway checks for new migration files
+3. New migrations are applied in order automatically
+4. Schema changes are version-controlled with your code
+
+**Creating a new migration:**
+```bash
+# Create new migration file
+touch src/main/resources/db/migration/V2__add_new_feature.sql
+
+# Add your SQL DDL statements
+# ALTER TABLE users ADD COLUMN last_login TIMESTAMP;
+```
+
+**Important:**
+- Never modify existing migration files after they've been applied
+- Always create new migrations for schema changes
+- Use descriptive names for migrations
+- Test migrations on development database first
 
 ### Main Tables
 
@@ -243,7 +408,19 @@ mvn test jacoco:report
 1. Create entity class in appropriate domain package
 2. Add JPA annotations (@Entity, @Table, @Id, etc.)
 3. Create repository interface extending JpaRepository
-4. JPA will auto-create table on next startup
+4. Create Flyway migration script for the new table:
+   ```bash
+   # Create migration file (increment version number)
+   touch src/main/resources/db/migration/V2__add_new_entity.sql
+   ```
+5. Add SQL DDL in migration file:
+   ```sql
+   CREATE TABLE new_entity (
+       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+       name VARCHAR(255) NOT NULL
+   );
+   ```
+6. Restart application - Flyway will apply the migration
 
 **Add new API endpoint:**
 1. Create/update DTO classes in dto/ subdirectory
@@ -251,10 +428,27 @@ mvn test jacoco:report
 3. Add endpoint to controller with proper mapping
 4. Add security configuration if endpoint should be public
 
+**Modify database schema:**
+1. Never modify existing migration files
+2. Create new migration with incremented version:
+   ```bash
+   touch src/main/resources/db/migration/V3__modify_table.sql
+   ```
+3. Add ALTER TABLE statements in the migration file
+4. Update entity class to match new schema
+5. Restart application to apply migration
+
 **Debug database issues:**
 1. Check SQL logs in console (spring.jpa.show-sql=true)
 2. Use H2 console to inspect data: http://localhost:8080/h2-console
-3. Check entity relationships and cascade settings
+3. Check Flyway migration history: `SELECT * FROM flyway_schema_history`
+4. Check entity relationships and cascade settings
+
+**Flyway troubleshooting:**
+1. View migration status: Check `flyway_schema_history` table in H2 console
+2. Failed migration: Fix the SQL, delete failed entry from history table, restart
+3. Schema mismatch: Ensure entity annotations match migration scripts
+4. For H2 in-memory: Database resets on restart, migrations reapply automatically
 
 ### Security Considerations
 
@@ -309,7 +503,7 @@ mvn test -X
    - Settings > Build > Compiler > Annotation Processors
    - Check "Enable annotation processing"
 3. Install Lombok plugin if not already installed
-4. Set Java SDK to 17
+4. Set Java SDK to 21
 
 ### VS Code
 
@@ -317,12 +511,13 @@ mvn test -X
    - Extension Pack for Java
    - Spring Boot Extension Pack
    - Lombok Annotations Support
-2. Java SDK 17 should be configured in settings
+2. Java SDK 21 should be configured in settings
 
 ## Additional Resources
 
-- [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/3.2.0/reference/html/)
+- [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/3.4.1/reference/html/)
 - [Spring Security](https://docs.spring.io/spring-security/reference/)
 - [Spring Data JPA](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/)
+- [Flyway Documentation](https://documentation.red-gate.com/flyway) - Database migration tool
 - [JWT.io](https://jwt.io/) - JWT debugger
 - [SM-2 Algorithm](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2) - Original SuperMemo algorithm

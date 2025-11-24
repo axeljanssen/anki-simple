@@ -1,0 +1,62 @@
+-- Create users table
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP
+);
+
+-- Create tags table
+CREATE TABLE tags (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    color VARCHAR(255),
+    user_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create vocabulary_cards table
+CREATE TABLE vocabulary_cards (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    front VARCHAR(255) NOT NULL,
+    back VARCHAR(255) NOT NULL,
+    example_sentence VARCHAR(1000),
+    source_language VARCHAR(10),
+    target_language VARCHAR(10),
+    audio_url VARCHAR(255),
+    created_at TIMESTAMP,
+    last_reviewed TIMESTAMP,
+    next_review TIMESTAMP,
+    ease_factor DOUBLE DEFAULT 2.5,
+    interval_days INT DEFAULT 0,
+    repetitions INT DEFAULT 0,
+    user_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Create review_history table
+CREATE TABLE review_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    card_id BIGINT NOT NULL,
+    reviewed_at TIMESTAMP,
+    quality INT NOT NULL,
+    ease_factor DOUBLE,
+    interval_days INT,
+    FOREIGN KEY (card_id) REFERENCES vocabulary_cards(id) ON DELETE CASCADE
+);
+
+-- Create card_tags join table (many-to-many relationship)
+CREATE TABLE card_tags (
+    card_id BIGINT NOT NULL,
+    tag_id BIGINT NOT NULL,
+    PRIMARY KEY (card_id, tag_id),
+    FOREIGN KEY (card_id) REFERENCES vocabulary_cards(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_vocabulary_cards_user_id ON vocabulary_cards(user_id);
+CREATE INDEX idx_vocabulary_cards_next_review ON vocabulary_cards(next_review);
+CREATE INDEX idx_tags_user_id ON tags(user_id);
+CREATE INDEX idx_review_history_card_id ON review_history(card_id);
