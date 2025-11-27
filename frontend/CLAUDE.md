@@ -28,7 +28,11 @@ npm run lint
 - **React Router** - Client-side routing
 - **Axios** - HTTP client for API calls
 - **Context API** - State management for authentication
-- **CSS** - Styling (no framework currently)
+- **Tailwind CSS 3.4.0** - Utility-first CSS framework
+- **Sass 1.70.0** - CSS preprocessor for custom styles
+- **PostCSS & Autoprefixer** - CSS transformation tools
+- **Vitest** - Unit testing framework
+- **React Testing Library** - Component testing utilities
 
 ## Project Structure
 
@@ -36,19 +40,30 @@ npm run lint
 src/
 ├── assets/           # Static assets (images, etc.)
 ├── components/       # Reusable UI components
+│   ├── ProtectedRoute.jsx  # Route authentication wrapper
+│   ├── VocabularyList.jsx  # Card grid display
+│   ├── VocabularyForm.jsx  # Card create/edit form
+│   └── VocabularyTable.jsx # Card table display
 ├── context/          # React Context providers
 │   └── AuthContext.jsx    # Authentication state management
 ├── pages/            # Page components
-│   ├── Login.jsx
-│   ├── Signup.jsx
-│   ├── Dashboard.jsx
-│   └── Review.jsx
+│   ├── Login.jsx           # Login page
+│   ├── Signup.jsx          # Registration page
+│   ├── Dashboard.jsx       # Main dashboard (grid view)
+│   ├── VocabularyTablePage.jsx  # Table view page
+│   └── Review.jsx          # Spaced repetition review
 ├── services/         # API service layer
 │   └── api.js       # Centralized API calls
+├── styles/           # Sass stylesheets
+│   ├── main.scss         # Main entry (Tailwind directives)
+│   ├── _base.scss        # Global base styles
+│   ├── _components.scss  # Custom component utilities
+│   └── _animations.scss  # Keyframe animations
+├── test/             # Test utilities
+│   └── setup.js     # Vitest configuration
 ├── utils/            # Utility functions
 ├── App.jsx           # Main application component
-├── main.jsx          # Application entry point
-└── index.css         # Global styles
+└── main.jsx          # Application entry point
 ```
 
 ## Architecture
@@ -62,12 +77,14 @@ The application uses React Router with protected routes:
   <Route path="/login" element={<Login />} />
   <Route path="/signup" element={<Signup />} />
   <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+  <Route path="/table" element={<ProtectedRoute><VocabularyTablePage /></ProtectedRoute>} />
   <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
 </Routes>
 ```
 
 - **Public routes**: `/login`, `/signup`
-- **Protected routes**: `/` (Dashboard), `/review`
+- **Protected routes**: `/` (Dashboard - grid view), `/table` (Table view), `/review` (Spaced repetition)
 - `ProtectedRoute` component checks authentication and redirects to login if needed
 
 ### Authentication Flow
@@ -145,19 +162,61 @@ export const tagAPI = {
 - Local state with `useState` for component-specific data
 - Form handling with controlled components
 
+### Styling with Tailwind CSS
+
+**Approach**:
+- Utility-first CSS using Tailwind classes directly in JSX
+- Custom Sass modules for reusable components and animations
+- Blue color theme (#2563eb) throughout the application
+- Responsive design with Tailwind breakpoints (md:, max-md:)
+
+**Configuration Files**:
+- `tailwind.config.js` - Tailwind configuration with custom blue theme
+- `postcss.config.js` - PostCSS configuration for Tailwind processing
+- `src/styles/main.scss` - Main entry point with @tailwind directives
+
+**Custom Sass Utilities**:
+- `.tag-pill` - Reusable tag component with dynamic background colors
+- `animate-modal-slide` - Modal slide-in animation (modalSlideIn keyframes)
+- Global base styles (body background, code font)
+
+**Dynamic Inline Styles**:
+- Tag colors: `style={{ backgroundColor: tag.color }}` (database-driven)
+- Progress bar: `style={{ width: `${progress}%` }}` (calculated value)
+
+**Example Tailwind Usage**:
+```jsx
+// Button with gradient and hover effect
+<button className="px-6 py-3 bg-gradient-to-br from-blue-600 to-blue-700
+                   text-white rounded-lg font-semibold transition-all
+                   hover:-translate-y-0.5 hover:shadow-xl">
+  Add Card
+</button>
+
+// Responsive grid (1 column mobile → 2 tablet → 3 desktop)
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {cards.map(card => <CardComponent key={card.id} {...card} />)}
+</div>
+```
+
+**Build Output**:
+- CSS bundle: 18.20 kB uncompressed, 4.18 kB gzipped
+- Automatically purges unused Tailwind classes in production
+
 ### Component Organization
 
 **Pages** (`pages/`):
-- **Login**: User login form
+- **Login**: User login form with blue gradient background
 - **Signup**: User registration form
-- **Dashboard**: Main view showing vocabulary cards and due count
-- **Review**: Review interface for due cards with quality rating
+- **Dashboard**: Main dashboard with card grid view and stats
+- **VocabularyTablePage**: Table view with search and CRUD operations
+- **Review**: Spaced repetition review interface with quality rating (0-5)
 
 **Components** (`components/`):
 - **ProtectedRoute**: Route wrapper that requires authentication
-- **VocabularyList**: Display list of vocabulary cards
-- **VocabularyForm**: Form for creating/editing cards
-- Other reusable UI components
+- **VocabularyList**: Card grid display with hover effects and tag colors
+- **VocabularyTable**: Tabular card display with sorting and filtering
+- **VocabularyForm**: Modal form for creating/editing cards with responsive grid
 
 ## Key Features
 
@@ -185,6 +244,33 @@ export const tagAPI = {
   - 5: Perfect recall
 - Backend updates card scheduling based on SM-2 algorithm
 - Review history tracked for analytics
+
+### Testing
+
+**Test Framework**: Vitest with React Testing Library
+
+**Test Suite** (40 tests total):
+- `api.test.js` - 12 tests for API service layer
+- `VocabularyList.test.jsx` - 10 tests for card list component
+- `AuthContext.test.jsx` - 10 tests for authentication context
+- `Login.test.jsx` - 5 tests for login page
+- `ProtectedRoute.test.jsx` - 3 tests for route protection
+
+**Running Tests**:
+```bash
+npm test              # Run all tests
+npm run test:ui       # Run tests with UI
+npm run test:coverage # Generate coverage report
+```
+
+**Test Utilities**:
+- `src/test/setup.js` - Vitest configuration and global test setup
+- Mock implementations for React Router and AuthContext
+- `@testing-library/user-event` for simulating user interactions
+
+**Coverage Reports**:
+- Generated in `coverage/` directory (excluded from git)
+- HTML reports available at `coverage/index.html`
 
 ## Development
 
@@ -238,6 +324,35 @@ function MyComponent() {
   const { user, logout } = useAuth()
   // Use user data or logout function
 }
+```
+
+**Style a component with Tailwind**:
+```jsx
+// Use utility classes directly in JSX
+<div className="bg-white p-8 rounded-xl shadow-md">
+  <h2 className="text-2xl font-bold text-gray-800 mb-4">Title</h2>
+  <button className="px-6 py-3 bg-gradient-to-br from-blue-600 to-blue-700
+                     text-white rounded-lg hover:-translate-y-0.5 transition-all">
+    Click Me
+  </button>
+</div>
+```
+
+**Add custom Sass utility**:
+1. Add styles to appropriate partial in `src/styles/`
+2. Use `@layer components` for component classes
+3. Use `@layer utilities` for utility classes
+4. Import automatically compiled via `main.scss`
+
+**Preserve dynamic inline styles**:
+```jsx
+// For database-driven colors or calculated values
+<span
+  className="tag-pill"
+  style={{ backgroundColor: tag.color }}
+>
+  {tag.name}
+</span>
 ```
 
 ## API Integration
@@ -342,3 +457,7 @@ npm run preview
 - [Vite Documentation](https://vitejs.dev/)
 - [React Router Documentation](https://reactrouter.com/)
 - [Axios Documentation](https://axios-http.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Sass Documentation](https://sass-lang.com/documentation/)
+- [Vitest Documentation](https://vitest.dev/)
+- [React Testing Library](https://testing-library.com/react)
