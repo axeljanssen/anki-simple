@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import type { VocabularyFormProps, VocabularyFormData } from '@/types'
 
-const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
-  const [formData, setFormData] = useState({
+const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): React.JSX.Element => {
+  const [formData, setFormData] = useState<VocabularyFormData>({
     front: '',
     back: '',
     exampleSentence: '',
@@ -9,7 +10,7 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
     targetLanguage: '',
     audioUrl: '',
     tagIds: [],
-  });
+  })
 
   useEffect(() => {
     if (card) {
@@ -21,28 +22,28 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
         targetLanguage: card.targetLanguage || '',
         audioUrl: card.audioUrl || '',
         tagIds: card.tags ? card.tags.map((t) => t.id) : [],
-      });
+      })
     }
-  }, [card]);
+  }, [card])
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault()
+    onSave(formData)
+  }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+  }
 
-  const handleTagToggle = (tagId) => {
+  const handleTagToggle = (tagId: number): void => {
     setFormData((prev) => ({
       ...prev,
       tagIds: prev.tagIds.includes(tagId)
         ? prev.tagIds.filter((id) => id !== tagId)
         : [...prev.tagIds, tagId],
-    }));
-  };
+    }))
+  }
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-md mb-8">
@@ -82,7 +83,7 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
             name="exampleSentence"
             value={formData.exampleSentence}
             onChange={handleChange}
-            rows="3"
+            rows={3}
             className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200 font-sans"
           />
         </div>
@@ -161,7 +162,7 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default VocabularyForm;
+export default VocabularyForm

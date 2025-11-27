@@ -1,40 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { vocabularyAPI } from '../services/api';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
+import { vocabularyAPI } from '@/services/api'
+import type { VocabularyCard } from '@/types'
+import { AxiosError } from 'axios'
 
-const Dashboard = () => {
-  const [cards, setCards] = useState([]);
-  const [dueCount, setDueCount] = useState(0);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+const Dashboard = (): React.JSX.Element => {
+  const [cards, setCards] = useState<VocabularyCard[]>([])
+  const [dueCount, setDueCount] = useState<number>(0)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
-  const loadCards = async () => {
+  const loadCards = async (): Promise<void> => {
     try {
-      const response = await vocabularyAPI.getAll();
-      setCards(response.data);
+      const response = await vocabularyAPI.getAll()
+      setCards(response.data)
     } catch (error) {
-      console.error('Failed to load cards:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to load cards:', axiosError)
     }
-  };
+  }
 
-  const loadDueCount = async () => {
+  const loadDueCount = async (): Promise<void> => {
     try {
-      const response = await vocabularyAPI.getDueCount();
-      setDueCount(response.data);
+      const response = await vocabularyAPI.getDueCount()
+      setDueCount(response.data)
     } catch (error) {
-      console.error('Failed to load due count:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to load due count:', axiosError)
     }
-  };
+  }
 
-  const handleStartReview = () => {
-    navigate('/review');
-  };
+  const handleStartReview = (): void => {
+    navigate('/review')
+  }
 
   useEffect(() => {
-    loadCards();
-    loadDueCount();
-  }, []);
+    loadCards()
+    loadDueCount()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -67,7 +71,7 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from './AuthContext'
-import { authAPI } from '../services/api'
+import { authAPI } from '@/services/api'
+import type { LoginCredentials, SignupData } from '@/types'
 
-vi.mock('../services/api')
+vi.mock('@/services/api')
 
 describe('AuthContext', () => {
   beforeEach(() => {
@@ -47,7 +48,7 @@ describe('AuthContext', () => {
 
   describe('login', () => {
     it('should successfully login and set user data', async () => {
-      const mockCredentials = { username: 'testuser', password: 'password123' }
+      const mockCredentials: LoginCredentials = { username: 'testuser', password: 'password123' }
       const mockResponse = {
         data: {
           token: 'mock-token',
@@ -80,7 +81,7 @@ describe('AuthContext', () => {
     })
 
     it('should handle login failure', async () => {
-      const mockCredentials = { username: 'testuser', password: 'wrongpassword' }
+      const mockCredentials: LoginCredentials = { username: 'testuser', password: 'wrongpassword' }
       const mockError = {
         response: {
           data: {
@@ -105,7 +106,7 @@ describe('AuthContext', () => {
     })
 
     it('should handle login failure with default error message', async () => {
-      const mockCredentials = { username: 'testuser', password: 'wrongpassword' }
+      const mockCredentials: LoginCredentials = { username: 'testuser', password: 'wrongpassword' }
       authAPI.login.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useAuth(), {
@@ -123,7 +124,7 @@ describe('AuthContext', () => {
 
   describe('signup', () => {
     it('should successfully signup and set user data', async () => {
-      const mockUserData = {
+      const mockUserData: SignupData = {
         username: 'newuser',
         email: 'newuser@example.com',
         password: 'password123',
@@ -160,7 +161,7 @@ describe('AuthContext', () => {
     })
 
     it('should handle signup failure', async () => {
-      const mockUserData = {
+      const mockUserData: SignupData = {
         username: 'existinguser',
         email: 'existing@example.com',
         password: 'password123',
@@ -189,7 +190,7 @@ describe('AuthContext', () => {
     })
 
     it('should handle signup failure with default error message', async () => {
-      const mockUserData = {
+      const mockUserData: SignupData = {
         username: 'newuser',
         email: 'newuser@example.com',
         password: 'password123',

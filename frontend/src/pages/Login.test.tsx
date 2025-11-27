@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import Login from './Login'
-import { AuthProvider } from '../context/AuthContext'
-import { authAPI } from '../services/api'
+import { AuthProvider } from '@/context/AuthContext'
+import { authAPI } from '@/services/api'
 
-vi.mock('../services/api')
+vi.mock('@/services/api')
 
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -46,8 +46,8 @@ describe('Login Component', () => {
   it('should update form fields on input change', () => {
     renderLogin()
 
-    const usernameInput = screen.getByLabelText('Username')
-    const passwordInput = screen.getByLabelText('Password')
+    const usernameInput = screen.getByLabelText('Username') as HTMLInputElement
+    const passwordInput = screen.getByLabelText('Password') as HTMLInputElement
 
     fireEvent.change(usernameInput, { target: { value: 'testuser' } })
     fireEvent.change(passwordInput, { target: { value: 'password123' } })

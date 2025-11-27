@@ -1,88 +1,94 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { vocabularyAPI, tagAPI } from '../services/api';
-import VocabularyTable from '../components/VocabularyTable';
-import VocabularyForm from '../components/VocabularyForm';
+import React, { useState, useEffect, MouseEvent, ChangeEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
+import { vocabularyAPI, tagAPI } from '@/services/api'
+import VocabularyTable from '@/components/VocabularyTable'
+import VocabularyForm from '@/components/VocabularyForm'
+import type { VocabularyCard, Tag, VocabularyFormData } from '@/types'
+import { AxiosError } from 'axios'
 
-const VocabularyTablePage = () => {
-  const [cards, setCards] = useState([]);
-  const [tags, setTags] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+const VocabularyTablePage = (): React.JSX.Element => {
+  const [cards, setCards] = useState<VocabularyCard[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+  const [showForm, setShowForm] = useState<boolean>(false)
+  const [editingCard, setEditingCard] = useState<VocabularyCard | null>(null)
+  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(true)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
-    loadCards();
-    loadTags();
-  }, []);
+    loadCards()
+    loadTags()
+  }, [])
 
-  const loadCards = async () => {
+  const loadCards = async (): Promise<void> => {
     try {
-      const response = await vocabularyAPI.getAll();
-      setCards(response.data);
+      const response = await vocabularyAPI.getAll()
+      setCards(response.data)
     } catch (error) {
-      console.error('Failed to load cards:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to load cards:', axiosError)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const loadTags = async () => {
+  const loadTags = async (): Promise<void> => {
     try {
-      const response = await tagAPI.getAll();
-      setTags(response.data);
+      const response = await tagAPI.getAll()
+      setTags(response.data)
     } catch (error) {
-      console.error('Failed to load tags:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to load tags:', axiosError)
     }
-  };
+  }
 
-  const handleSaveCard = async (cardData) => {
+  const handleSaveCard = async (cardData: VocabularyFormData): Promise<void> => {
     try {
       if (editingCard) {
-        await vocabularyAPI.update(editingCard.id, cardData);
+        await vocabularyAPI.update(editingCard.id, cardData)
       } else {
-        await vocabularyAPI.create(cardData);
+        await vocabularyAPI.create(cardData)
       }
-      setShowForm(false);
-      setEditingCard(null);
-      loadCards();
+      setShowForm(false)
+      setEditingCard(null)
+      loadCards()
     } catch (error) {
-      console.error('Failed to save card:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to save card:', axiosError)
     }
-  };
+  }
 
-  const handleEditCard = (card) => {
-    setEditingCard(card);
-    setShowForm(true);
-  };
+  const handleEditCard = (card: VocabularyCard): void => {
+    setEditingCard(card)
+    setShowForm(true)
+  }
 
-  const handleDeleteCard = async (id) => {
+  const handleDeleteCard = async (id: number): Promise<void> => {
     if (window.confirm('Are you sure you want to delete this card?')) {
       try {
-        await vocabularyAPI.delete(id);
-        setCards(prevCards => prevCards.filter(card => card.id !== id));
+        await vocabularyAPI.delete(id)
+        setCards(prevCards => prevCards.filter(card => card.id !== id))
       } catch (error) {
-        console.error('Failed to delete card:', error);
-        loadCards();
+        const axiosError = error as AxiosError
+        console.error('Failed to delete card:', axiosError)
+        loadCards()
       }
     }
-  };
+  }
 
-  const handleAddNew = () => {
-    setEditingCard(null);
-    setShowForm(true);
-  };
+  const handleAddNew = (): void => {
+    setEditingCard(null)
+    setShowForm(true)
+  }
 
-  const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('form-modal-overlay')) {
-      setShowForm(false);
-      setEditingCard(null);
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>): void => {
+    if ((e.target as HTMLElement).classList.contains('form-modal-overlay')) {
+      setShowForm(false)
+      setEditingCard(null)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -119,7 +125,7 @@ const VocabularyTablePage = () => {
               className="w-full py-3 pr-10 pl-4 border-2 border-gray-300 rounded-lg text-sm transition-all duration-300 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
               placeholder="Search cards by front, back, or example..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
               <button
@@ -148,14 +154,14 @@ const VocabularyTablePage = () => {
 
         {showForm && (
           <div className="form-modal-overlay fixed inset-0 bg-black/50 flex justify-center items-center z-[1000]" onClick={handleOverlayClick}>
-            <div className="bg-white rounded-lg p-8 max-w-[600px] w-[90%] max-h-[90vh] overflow-y-auto shadow-2xl animate-modal-slide max-md:w-[95%] max-md:p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-lg p-8 max-w-[600px] w-[90%] max-h-[90vh] overflow-y-auto shadow-2xl animate-modal-slide max-md:w-[95%] max-md:p-5" onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
               <VocabularyForm
                 card={editingCard}
                 tags={tags}
                 onSave={handleSaveCard}
                 onCancel={() => {
-                  setShowForm(false);
-                  setEditingCard(null);
+                  setShowForm(false)
+                  setEditingCard(null)
                 }}
               />
             </div>
@@ -163,7 +169,7 @@ const VocabularyTablePage = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default VocabularyTablePage;
+export default VocabularyTablePage

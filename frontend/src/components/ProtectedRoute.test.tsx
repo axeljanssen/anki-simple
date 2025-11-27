@@ -2,9 +2,10 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
-import { AuthContext } from '../context/AuthContext'
+import { AuthContext } from '@/context/AuthContext'
+import type { AuthContextValue } from '@/types'
 
-const renderProtectedRoute = (authContextValue, initialPath = '/') => {
+const renderProtectedRoute = (authContextValue: AuthContextValue, initialPath = '/') => {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <AuthContext.Provider value={authContextValue}>
@@ -26,7 +27,7 @@ const renderProtectedRoute = (authContextValue, initialPath = '/') => {
 
 describe('ProtectedRoute Component', () => {
   it('should show loading state when loading is true', () => {
-    const authValue = {
+    const authValue: AuthContextValue = {
       user: null,
       loading: true,
       login: vi.fn(),
@@ -40,7 +41,7 @@ describe('ProtectedRoute Component', () => {
   })
 
   it('should render children when user is authenticated', () => {
-    const authValue = {
+    const authValue: AuthContextValue = {
       user: { username: 'testuser', email: 'test@example.com', token: 'mock-token' },
       loading: false,
       login: vi.fn(),
@@ -54,7 +55,7 @@ describe('ProtectedRoute Component', () => {
   })
 
   it('should redirect to login when user is not authenticated', () => {
-    const authValue = {
+    const authValue: AuthContextValue = {
       user: null,
       loading: false,
       login: vi.fn(),

@@ -23,15 +23,16 @@ npm run lint
 
 ## Technology Stack
 
-- **React 18** - UI library
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **Axios** - HTTP client for API calls
+- **TypeScript 5.7+** - Statically typed JavaScript with strict mode
+- **React 19** - UI library
+- **Vite 7** - Build tool and dev server
+- **React Router 6** - Client-side routing
+- **Axios** - HTTP client for API calls with full TypeScript support
 - **Context API** - State management for authentication
 - **Tailwind CSS 3.4.0** - Utility-first CSS framework
-- **Sass 1.70.0** - CSS preprocessor for custom styles
+- **Sass 1.94.0** - CSS preprocessor for custom styles
 - **PostCSS & Autoprefixer** - CSS transformation tools
-- **Vitest** - Unit testing framework
+- **Vitest 4** - Unit testing framework
 - **React Testing Library** - Component testing utilities
 
 ## Project Structure
@@ -40,39 +41,121 @@ npm run lint
 src/
 ├── assets/           # Static assets (images, etc.)
 ├── components/       # Reusable UI components
-│   ├── ProtectedRoute.jsx  # Route authentication wrapper
-│   ├── VocabularyList.jsx  # Card grid display
-│   ├── VocabularyForm.jsx  # Card create/edit form
-│   └── VocabularyTable.jsx # Card table display
+│   ├── ProtectedRoute.tsx  # Route authentication wrapper
+│   ├── VocabularyList.tsx  # Card grid display
+│   ├── VocabularyForm.tsx  # Card create/edit form
+│   └── VocabularyTable.tsx # Card table display
 ├── context/          # React Context providers
-│   └── AuthContext.jsx    # Authentication state management
+│   └── AuthContext.tsx    # Authentication state management
 ├── pages/            # Page components
-│   ├── Login.jsx           # Login page
-│   ├── Signup.jsx          # Registration page
-│   ├── Dashboard.jsx       # Main dashboard (grid view)
-│   ├── VocabularyTablePage.jsx  # Table view page
-│   └── Review.jsx          # Spaced repetition review
+│   ├── Login.tsx           # Login page
+│   ├── Signup.tsx          # Registration page
+│   ├── Dashboard.tsx       # Main dashboard (grid view)
+│   ├── VocabularyTablePage.tsx  # Table view page
+│   └── Review.tsx          # Spaced repetition review
 ├── services/         # API service layer
-│   └── api.js       # Centralized API calls
+│   └── api.ts       # Centralized API calls with TypeScript types
 ├── styles/           # Sass stylesheets
 │   ├── main.scss         # Main entry (Tailwind directives)
 │   ├── _base.scss        # Global base styles
 │   ├── _components.scss  # Custom component utilities
 │   └── _animations.scss  # Keyframe animations
 ├── test/             # Test utilities
-│   └── setup.js     # Vitest configuration
+│   └── setup.ts     # Vitest configuration
+├── types/            # TypeScript type definitions
+│   ├── index.ts          # Re-export all types
+│   ├── models.ts         # Data models (User, Card, Tag)
+│   ├── api.ts            # API request/response types
+│   ├── context.ts        # Context types
+│   └── components.ts     # Component prop types
 ├── utils/            # Utility functions
-├── App.jsx           # Main application component
-└── main.jsx          # Application entry point
+├── App.tsx           # Main application component
+└── main.tsx          # Application entry point
 ```
 
 ## Architecture
+
+### TypeScript Type System
+
+The application uses TypeScript with **strict mode** enabled for maximum type safety. All types are centralized in the `src/types/` directory.
+
+**Type Configuration** (`tsconfig.json`):
+- Strict mode: All strict type-checking options enabled
+- Path aliases: `@/*` resolves to `./src/*` for cleaner imports
+- No unchecked indexed access: Array access returns `T | undefined`
+- Modern ES2022 target with DOM libraries
+
+**Core Type Definitions**:
+
+```typescript
+// src/types/models.ts
+export interface User {
+  username: string
+  email: string
+  token: string
+}
+
+export interface VocabularyCard {
+  id: number
+  front: string
+  back: string
+  exampleSentence: string | null
+  tags: Tag[]
+  easeFactor: number
+  intervalDays: number
+  nextReview: string | null
+  // ... other fields
+}
+
+export interface Tag {
+  id: number
+  name: string
+  color: string
+}
+```
+
+**API Types** (`src/types/api.ts`):
+```typescript
+export interface AuthResponse {
+  token: string
+  username: string
+  email: string
+}
+```
+
+**Context Types** (`src/types/context.ts`):
+```typescript
+export interface AuthContextValue {
+  user: User | null
+  loading: boolean
+  login: (credentials: LoginCredentials) => Promise<AuthResult>
+  signup: (userData: SignupData) => Promise<AuthResult>
+  logout: () => void
+}
+```
+
+**Component Props** (`src/types/components.ts`):
+```typescript
+export interface VocabularyListProps {
+  cards: VocabularyCard[]
+  onEdit: (card: VocabularyCard) => void
+  onDelete: (id: number) => void
+}
+```
+
+**Path Aliases**:
+All imports use the `@/` prefix for cleaner code:
+```typescript
+import { User, VocabularyCard } from '@/types'
+import { authAPI } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
+```
 
 ### Routing Structure
 
 The application uses React Router with protected routes:
 
-```javascript
+```tsx
 <Routes>
   <Route path="/login" element={<Login />} />
   <Route path="/signup" element={<Signup />} />
@@ -89,7 +172,7 @@ The application uses React Router with protected routes:
 
 ### Authentication Flow
 
-**AuthContext** (`context/AuthContext.jsx`):
+**AuthContext** (`context/AuthContext.tsx`):
 - Provides authentication state and methods throughout the app
 - Stores JWT token in localStorage
 - Manages user login/logout state
@@ -97,7 +180,7 @@ The application uses React Router with protected routes:
 
 **Axios Interceptor**:
 - Automatically adds `Authorization: Bearer <token>` header to all API requests
-- Configured in `services/api.js`
+- Configured in `services/api.ts` with full TypeScript types
 
 **Authentication Process**:
 1. User submits login/signup form
@@ -110,43 +193,63 @@ The application uses React Router with protected routes:
 
 ### API Layer
 
-**Services** (`services/api.js`):
-Centralizes all API calls organized by domain:
+**Services** (`services/api.ts`):
+Centralizes all API calls organized by domain with full TypeScript typing:
 
-```javascript
+```typescript
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import { AuthResponse, VocabularyCard, Tag, LoginCredentials, SignupData, VocabularyFormData, ReviewSubmission } from '@/types'
+
 // Base configuration
 const API_BASE_URL = 'http://localhost:8080/api'
 
-// API modules
+const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: { 'Content-Type': 'application/json' },
+})
+
+// Typed request interceptor
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('token')
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  }
+)
+
+// API modules with full type safety
 export const authAPI = {
-  login: (credentials) => POST /api/auth/login
-  signup: (userData) => POST /api/auth/signup
+  login: (data: LoginCredentials) => api.post<AuthResponse>('/auth/login', data),
+  signup: (data: SignupData) => api.post<AuthResponse>('/auth/signup', data),
 }
 
 export const vocabularyAPI = {
-  getAll: () => GET /api/vocabulary
-  create: (card) => POST /api/vocabulary
-  update: (id, card) => PUT /api/vocabulary/:id
-  delete: (id) => DELETE /api/vocabulary/:id
-  getDue: () => GET /api/vocabulary/due
-  getDueCount: () => GET /api/vocabulary/due/count
+  getAll: () => api.get<VocabularyCard[]>('/vocabulary'),
+  create: (data: VocabularyFormData) => api.post<VocabularyCard>('/vocabulary', data),
+  update: (id: number, data: VocabularyFormData) => api.put<VocabularyCard>(`/vocabulary/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/vocabulary/${id}`),
+  getDue: () => api.get<VocabularyCard[]>('/vocabulary/due'),
+  getDueCount: () => api.get<number>('/vocabulary/due/count'),
 }
 
 export const reviewAPI = {
-  submitReview: (cardId, quality) => POST /api/review
+  review: (data: ReviewSubmission) => api.post<void>('/review', data),
 }
 
 export const tagAPI = {
-  getAll: () => GET /api/tags
-  create: (tag) => POST /api/tags
-  delete: (id) => DELETE /api/tags/:id
+  getAll: () => api.get<Tag[]>('/tags'),
+  create: (data: { name: string; color: string }) => api.post<Tag>('/tags', data),
+  delete: (id: number) => api.delete<void>(`/tags/${id}`),
 }
 ```
 
-**Axios Configuration**:
-- Base URL: `http://localhost:8080/api`
-- Request interceptor: Adds JWT token to Authorization header
-- Response interceptor: Handles 401 errors (token expiration)
+**TypeScript Benefits**:
+- Full type safety for all API requests and responses
+- IntelliSense autocomplete for API methods and data structures
+- Compile-time validation of request/response shapes
+- Generic types ensure response data matches expected types
 
 ### State Management
 
@@ -250,11 +353,11 @@ export const tagAPI = {
 **Test Framework**: Vitest with React Testing Library
 
 **Test Suite** (40 tests total):
-- `api.test.js` - 12 tests for API service layer
-- `VocabularyList.test.jsx` - 10 tests for card list component
-- `AuthContext.test.jsx` - 10 tests for authentication context
-- `Login.test.jsx` - 5 tests for login page
-- `ProtectedRoute.test.jsx` - 3 tests for route protection
+- `api.test.ts` - 12 tests for API service layer with TypeScript types
+- `VocabularyList.test.tsx` - 10 tests for card list component
+- `AuthContext.test.tsx` - 10 tests for authentication context
+- `Login.test.tsx` - 5 tests for login page
+- `ProtectedRoute.test.tsx` - 3 tests for route protection
 
 **Running Tests**:
 ```bash
@@ -264,9 +367,10 @@ npm run test:coverage # Generate coverage report
 ```
 
 **Test Utilities**:
-- `src/test/setup.js` - Vitest configuration and global test setup
-- Mock implementations for React Router and AuthContext
+- `src/test/setup.ts` - Vitest configuration with TypeScript
+- Mock implementations for React Router and AuthContext with proper typing
 - `@testing-library/user-event` for simulating user interactions
+- Type-safe mock data using domain types from `@/types`
 
 **Coverage Reports**:
 - Generated in `coverage/` directory (excluded from git)
@@ -283,33 +387,88 @@ npm run test:coverage # Generate coverage report
 
 ### Environment Configuration
 
-Update API base URL in `services/api.js` if backend runs on different port:
-```javascript
+Update API base URL in `services/api.ts` if backend runs on different port:
+```typescript
 const API_BASE_URL = 'http://localhost:8080/api'
 ```
 
 ### Code Style
 
-- Use functional components with hooks
-- Prefer arrow functions for components
-- Use destructuring for props
+**TypeScript Patterns**:
+- Use functional components with TypeScript and hooks
+- Define interfaces for all component props
+- Type all useState hooks with explicit types
+- Use path aliases (`@/`) for imports
+- Leverage type inference where appropriate
+
+**Component Structure**:
+```typescript
+import React, { useState, FormEvent } from 'react'
+import { ComponentProps } from '@/types'
+
+const Component = ({ prop1, prop2 }: ComponentProps): React.JSX.Element => {
+  const [state, setState] = useState<Type>(initialValue)
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault()
+    // handler logic
+  }
+
+  return <div>...</div>
+}
+
+export default Component
+```
+
+**General Principles**:
 - Keep components focused and small
 - Extract reusable logic into custom hooks
+- Type all function parameters and return values
+- Use destructuring for props with type annotations
+- Handle null/undefined cases explicitly (strict mode)
 
 ### Common Development Tasks
 
 **Add new API endpoint**:
-1. Add method to appropriate API module in `services/api.js`
-2. Use axios with appropriate HTTP method
-3. Return the promise for error handling
+1. Define types in `src/types/api.ts` or `src/types/models.ts`
+2. Add typed method to appropriate API module in `services/api.ts`
+3. Use axios with generic type parameter for response
+
+```typescript
+// In src/types/models.ts
+export interface NewEntity {
+  id: number
+  name: string
+}
+
+// In services/api.ts
+export const newAPI = {
+  getAll: () => api.get<NewEntity[]>('/new-entities'),
+  create: (data: Omit<NewEntity, 'id'>) => api.post<NewEntity>('/new-entities', data),
+}
+```
 
 **Create new page**:
-1. Create component in `pages/` directory
-2. Add route in `App.jsx`
-3. Wrap with `ProtectedRoute` if authentication required
+1. Create typed component in `pages/` directory (`.tsx` extension)
+2. Define prop types if needed in `src/types/components.ts`
+3. Add route in `App.tsx`
+4. Wrap with `ProtectedRoute` if authentication required
+
+```typescript
+// pages/NewPage.tsx
+import React from 'react'
+import { useAuth } from '@/context/AuthContext'
+
+const NewPage = (): React.JSX.Element => {
+  const { user } = useAuth()
+  return <div>New Page for {user?.username}</div>
+}
+
+export default NewPage
+```
 
 **Add new protected route**:
-```javascript
+```tsx
 <Route
   path="/new-page"
   element={<ProtectedRoute><NewPage /></ProtectedRoute>}
@@ -317,13 +476,53 @@ const API_BASE_URL = 'http://localhost:8080/api'
 ```
 
 **Access authentication state**:
-```javascript
-import { useAuth } from '../context/AuthContext'
+```typescript
+import { useAuth } from '@/context/AuthContext'
 
-function MyComponent() {
-  const { user, logout } = useAuth()
-  // Use user data or logout function
+const MyComponent = (): React.JSX.Element => {
+  const { user, logout } = useAuth() // Fully typed via AuthContextValue
+  // user is typed as User | null
+
+  return (
+    <div>
+      {user && <p>Hello, {user.username}</p>}
+      <button onClick={logout}>Logout</button>
+    </div>
+  )
 }
+```
+
+**Create typed component with props**:
+```typescript
+// Define props interface in src/types/components.ts
+export interface MyComponentProps {
+  title: string
+  count: number
+  onUpdate: (newCount: number) => void
+}
+
+// Component file
+import React, { useState } from 'react'
+import { MyComponentProps } from '@/types'
+
+const MyComponent = ({ title, count, onUpdate }: MyComponentProps): React.JSX.Element => {
+  const [localCount, setLocalCount] = useState<number>(count)
+
+  const handleClick = (): void => {
+    const newCount = localCount + 1
+    setLocalCount(newCount)
+    onUpdate(newCount)
+  }
+
+  return (
+    <div>
+      <h2>{title}</h2>
+      <button onClick={handleClick}>Count: {localCount}</button>
+    </div>
+  )
+}
+
+export default MyComponent
 ```
 
 **Style a component with Tailwind**:
@@ -390,20 +589,51 @@ Authorization: Bearer <jwt-token>
 
 ### Error Handling
 
-```javascript
+**TypeScript Error Handling**:
+```typescript
+import { AxiosError } from 'axios'
+import { vocabularyAPI } from '@/services/api'
+import { ProblemDetails } from '@/types'
+
 try {
   const response = await vocabularyAPI.getAll()
+  const cards = response.data // Typed as VocabularyCard[]
   // Handle success
 } catch (error) {
-  if (error.response) {
+  const axiosError = error as AxiosError<ProblemDetails>
+
+  if (axiosError.response) {
     // Server responded with error status
-    console.error(error.response.data.detail)
-  } else if (error.request) {
+    console.error(axiosError.response.data.detail)
+    console.error(`Status: ${axiosError.response.data.status}`)
+  } else if (axiosError.request) {
     // Request made but no response
     console.error('No response from server')
   } else {
     // Request setup error
-    console.error('Request error:', error.message)
+    console.error('Request error:', axiosError.message)
+  }
+}
+```
+
+**Type-Safe Async State**:
+```typescript
+const [cards, setCards] = useState<VocabularyCard[]>([])
+const [loading, setLoading] = useState<boolean>(false)
+const [error, setError] = useState<string | null>(null)
+
+const loadCards = async (): Promise<void> => {
+  setLoading(true)
+  setError(null)
+
+  try {
+    const response = await vocabularyAPI.getAll()
+    setCards(response.data)
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>
+    setError(axiosError.response?.data?.message || 'Failed to load cards')
+  } finally {
+    setLoading(false)
   }
 }
 ```
@@ -419,14 +649,17 @@ npm run preview
 ```
 
 **Build output**: `dist/` directory
-- Optimized and minified JavaScript
-- CSS extracted and minified
+- TypeScript compiled to optimized JavaScript (ES2022)
+- CSS extracted and minified (18.20 kB → 4.18 kB gzipped)
+- JavaScript bundled and minified (277.50 kB → 88.07 kB gzipped)
 - Assets copied and hashed for cache busting
+- Full type checking performed during build
 
 **Deployment**:
 - Serve `dist/` directory as static files
 - Configure web server to redirect all routes to `index.html` (for client-side routing)
-- Update `API_BASE_URL` in `api.js` to production backend URL
+- Update `API_BASE_URL` in `api.ts` to production backend URL
+- TypeScript types are removed during compilation (zero runtime overhead)
 
 ## Troubleshooting
 
@@ -444,15 +677,27 @@ npm run preview
 **API connection errors**:
 - Verify backend is running: `http://localhost:8080`
 - Check network tab in browser DevTools
-- Verify API_BASE_URL in `services/api.js`
+- Verify API_BASE_URL in `services/api.ts`
+- Check TypeScript types match backend API responses
+
+**TypeScript errors**:
+- Run type check: `npx tsc --noEmit`
+- Check `tsconfig.json` for proper configuration
+- Ensure all imports use correct paths (use `@/` aliases)
+- Verify type definitions in `src/types/` match actual data
 
 **Build errors**:
-- Clear node_modules: `rm -rf node_modules && npm install`
-- Check Node.js version (requires Node 14+)
+- Clear node_modules and reinstall: `rm -rf node_modules && npm install`
+- Check Node.js version (requires Node 18+)
+- Run TypeScript compiler directly: `npx tsc --noEmit`
 - Review console for specific error messages
+- Ensure all `.tsx` files have proper JSX syntax
 
 ## Additional Resources
 
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [React with TypeScript](https://react.dev/learn/typescript)
 - [React Documentation](https://react.dev/)
 - [Vite Documentation](https://vitejs.dev/)
 - [React Router Documentation](https://reactrouter.com/)

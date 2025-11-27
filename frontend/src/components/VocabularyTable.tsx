@@ -1,25 +1,30 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react'
+import type { VocabularyTableProps } from '@/types'
 
-const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }) => {
+interface VocabularyTablePropsExtended extends VocabularyTableProps {
+  searchTerm?: string
+}
+
+const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }: VocabularyTablePropsExtended): React.JSX.Element => {
   const filteredCards = useMemo(() => {
     if (!searchTerm) {
-      return cards;
+      return cards
     }
 
-    const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase()
     return cards.filter(card =>
       card.front.toLowerCase().includes(term) ||
       card.back.toLowerCase().includes(term) ||
       (card.exampleSentence && card.exampleSentence.toLowerCase().includes(term))
-    );
-  }, [cards, searchTerm]);
+    )
+  }, [cards, searchTerm])
 
   if (cards.length === 0) {
     return (
       <div className="bg-white py-15 px-5 rounded-lg shadow-sm text-center">
         <p className="text-gray-600 text-base m-0">No vocabulary cards yet. Create your first card to get started!</p>
       </div>
-    );
+    )
   }
 
   if (filteredCards.length === 0) {
@@ -27,7 +32,7 @@ const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }) => {
       <div className="bg-white py-15 px-5 rounded-lg shadow-sm text-center">
         <p className="text-gray-600 text-base m-0">No cards match your search: &quot;{searchTerm}&quot;</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -97,7 +102,7 @@ const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }) => {
         </table>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default VocabularyTable;
+export default VocabularyTable

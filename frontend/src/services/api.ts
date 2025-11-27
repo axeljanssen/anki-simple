@@ -1,0 +1,59 @@
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import {
+  AuthResponse,
+  VocabularyCard,
+  Tag,
+  LoginCredentials,
+  SignupData,
+  VocabularyFormData,
+  ReviewSubmission,
+} from '@/types'
+
+const API_BASE_URL = 'http://localhost:8080/api'
+
+const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('token')
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+export const authAPI = {
+  signup: (data: SignupData) => api.post<AuthResponse>('/auth/signup', data),
+  login: (data: LoginCredentials) => api.post<AuthResponse>('/auth/login', data),
+}
+
+export const vocabularyAPI = {
+  getAll: () => api.get<VocabularyCard[]>('/vocabulary'),
+  getDue: () => api.get<VocabularyCard[]>('/vocabulary/due'),
+  getDueCount: () => api.get<number>('/vocabulary/due/count'),
+  create: (data: VocabularyFormData) => api.post<VocabularyCard>('/vocabulary', data),
+  update: (id: number, data: VocabularyFormData) =>
+    api.put<VocabularyCard>(`/vocabulary/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/vocabulary/${id}`),
+}
+
+export const reviewAPI = {
+  review: (data: ReviewSubmission) => api.post<void>('/review', data),
+}
+
+export const tagAPI = {
+  getAll: () => api.get<Tag[]>('/tags'),
+  create: (data: { name: string; color: string }) => api.post<Tag>('/tags', data),
+  delete: (id: number) => api.delete<void>(`/tags/${id}`),
+}
+
+export default api

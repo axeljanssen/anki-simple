@@ -1,28 +1,33 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, FormEvent, ChangeEvent } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
-const Login = () => {
-  const [formData, setFormData] = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
+interface LoginFormData {
+  username: string
+  password: string
+}
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+const Login = (): React.JSX.Element => {
+  const [formData, setFormData] = useState<LoginFormData>({ username: '', password: '' })
+  const [error, setError] = useState<string>('')
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
-    const result = await login(formData);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault()
+    setError('')
+
+    const result = await login(formData)
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard')
     } else {
-      setError(result.error || 'Invalid credentials');
+      setError(result.error || 'Invalid credentials')
     }
-  };
+  }
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-600 to-blue-700 p-5">
@@ -61,7 +66,7 @@ const Login = () => {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

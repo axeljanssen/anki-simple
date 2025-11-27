@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import VocabularyList from './VocabularyList'
+import type { VocabularyCard } from '@/types'
 
 describe('VocabularyList Component', () => {
   it('should display empty state when no cards are provided', () => {
@@ -15,7 +16,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should render list of vocabulary cards', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -52,7 +53,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should display example sentence when provided', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -75,7 +76,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should not display example sentence when not provided', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -97,7 +98,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should display language badge when languages are provided', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -119,7 +120,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should display tags when provided', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -145,7 +146,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should display card statistics', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -167,7 +168,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should call onEdit with card when edit button is clicked', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -192,7 +193,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should call onDelete with card id when delete button is clicked', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',
@@ -217,7 +218,7 @@ describe('VocabularyList Component', () => {
   })
 
   it('should render multiple cards with correct actions', () => {
-    const mockCards = [
+    const mockCards: VocabularyCard[] = [
       {
         id: 1,
         front: 'Hello',

@@ -1,33 +1,39 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, FormEvent, ChangeEvent } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
-const Signup = () => {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
-  const [error, setError] = useState('');
-  const { signup } = useAuth();
-  const navigate = useNavigate();
+interface SignupFormData {
+  username: string
+  email: string
+  password: string
+}
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+const Signup = (): React.JSX.Element => {
+  const [formData, setFormData] = useState<SignupFormData>({ username: '', email: '', password: '' })
+  const [error, setError] = useState<string>('')
+  const { signup } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault()
+    setError('')
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
+      setError('Password must be at least 6 characters')
+      return
     }
 
-    const result = await signup(formData);
+    const result = await signup(formData)
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard')
     } else {
-      setError(result.error || 'Signup failed');
+      setError(result.error || 'Signup failed')
     }
-  };
+  }
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-blue-600 to-blue-700 p-5">
@@ -43,7 +49,7 @@ const Signup = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              minLength="3"
+              minLength={3}
               required
               className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
@@ -68,7 +74,7 @@ const Signup = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              minLength="6"
+              minLength={6}
               required
               className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
@@ -80,7 +86,7 @@ const Signup = () => {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Signup;
+export default Signup

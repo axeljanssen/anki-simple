@@ -1,48 +1,52 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { vocabularyAPI, reviewAPI } from '../services/api';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { vocabularyAPI, reviewAPI } from '@/services/api'
+import type { VocabularyCard } from '@/types'
+import { AxiosError } from 'axios'
 
-const Review = () => {
-  const [dueCards, setDueCards] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const Review = (): React.JSX.Element => {
+  const [dueCards, setDueCards] = useState<VocabularyCard[]>([])
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
+  const [showAnswer, setShowAnswer] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
+  const navigate = useNavigate()
+
+  const loadDueCards = async (): Promise<void> => {
+    try {
+      const response = await vocabularyAPI.getDue()
+      setDueCards(response.data)
+      setLoading(false)
+    } catch (error) {
+      const axiosError = error as AxiosError
+      console.error('Failed to load due cards:', axiosError)
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    loadDueCards();
-  }, []);
+    loadDueCards()
+  }, [])
 
-  const loadDueCards = async () => {
-    try {
-      const response = await vocabularyAPI.getDue();
-      setDueCards(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to load due cards:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleReview = async (quality) => {
-    const currentCard = dueCards[currentIndex];
+  const handleReview = async (quality: number): Promise<void> => {
+    const currentCard = dueCards[currentIndex]
 
     try {
       await reviewAPI.review({
         cardId: currentCard.id,
         quality: quality,
-      });
+      })
 
       if (currentIndex < dueCards.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-        setShowAnswer(false);
+        setCurrentIndex(currentIndex + 1)
+        setShowAnswer(false)
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard')
       }
     } catch (error) {
-      console.error('Failed to review card:', error);
+      const axiosError = error as AxiosError
+      console.error('Failed to review card:', axiosError)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -51,7 +55,7 @@ const Review = () => {
           Loading...
         </div>
       </div>
-    );
+    )
   }
 
   if (dueCards.length === 0) {
@@ -68,11 +72,11 @@ const Review = () => {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
-  const currentCard = dueCards[currentIndex];
-  const progress = ((currentIndex + 1) / dueCards.length) * 100;
+  const currentCard = dueCards[currentIndex]
+  const progress = ((currentIndex + 1) / dueCards.length) * 100
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-700 p-5">
@@ -178,7 +182,7 @@ const Review = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Review;
+export default Review

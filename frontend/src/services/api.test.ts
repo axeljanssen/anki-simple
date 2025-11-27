@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, Mock } from 'vitest'
 import axios from 'axios'
+import { AuthResponse, VocabularyCard, Tag } from '@/types'
 
 vi.mock('axios', () => {
   return {
@@ -19,7 +20,16 @@ vi.mock('axios', () => {
 })
 
 describe('API Service', () => {
-  let mockAxiosInstance
+  let mockAxiosInstance: {
+    interceptors: {
+      request: { use: Mock; eject: Mock }
+      response: { use: Mock; eject: Mock }
+    }
+    get: Mock
+    post: Mock
+    put: Mock
+    delete: Mock
+  }
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -40,18 +50,20 @@ describe('API Service', () => {
       delete: vi.fn(),
     }
 
-    axios.create.mockReturnValue(mockAxiosInstance)
+    ;(axios.create as Mock).mockReturnValue(mockAxiosInstance)
   })
 
   describe('authAPI', () => {
     it('should call signup endpoint with correct data', async () => {
       const mockData = { username: 'testuser', email: 'test@example.com', password: 'password123' }
-      const mockResponse = { data: { token: 'mock-token', username: 'testuser', email: 'test@example.com' } }
+      const mockResponse: { data: AuthResponse } = {
+        data: { token: 'mock-token', username: 'testuser', email: 'test@example.com' }
+      }
 
       mockAxiosInstance.post.mockResolvedValue(mockResponse)
 
       // Import after setting up mocks
-      const { authAPI } = await import('./api.js')
+      const { authAPI } = await import('./api.ts')
       await authAPI.signup(mockData)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/auth/signup', mockData)
@@ -59,11 +71,13 @@ describe('API Service', () => {
 
     it('should call login endpoint with correct credentials', async () => {
       const mockCredentials = { username: 'testuser', password: 'password123' }
-      const mockResponse = { data: { token: 'mock-token', username: 'testuser', email: 'test@example.com' } }
+      const mockResponse: { data: AuthResponse } = {
+        data: { token: 'mock-token', username: 'testuser', email: 'test@example.com' }
+      }
 
       mockAxiosInstance.post.mockResolvedValue(mockResponse)
 
-      const { authAPI } = await import('./api.js')
+      const { authAPI } = await import('./api.ts')
       await authAPI.login(mockCredentials)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/auth/login', mockCredentials)
@@ -72,20 +86,20 @@ describe('API Service', () => {
 
   describe('vocabularyAPI', () => {
     it('should get all vocabulary cards', async () => {
-      const mockCards = [{ id: 1, front: 'Hello', back: 'Hola' }]
+      const mockCards: Partial<VocabularyCard>[] = [{ id: 1, front: 'Hello', back: 'Hola' }]
       mockAxiosInstance.get.mockResolvedValue({ data: mockCards })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.getAll()
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vocabulary')
     })
 
     it('should get due vocabulary cards', async () => {
-      const mockDueCards = [{ id: 1, front: 'Hello', back: 'Hola' }]
+      const mockDueCards: Partial<VocabularyCard>[] = [{ id: 1, front: 'Hello', back: 'Hola' }]
       mockAxiosInstance.get.mockResolvedValue({ data: mockDueCards })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.getDue()
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vocabulary/due')
@@ -94,17 +108,17 @@ describe('API Service', () => {
     it('should get due count', async () => {
       mockAxiosInstance.get.mockResolvedValue({ data: { count: 5 } })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.getDueCount()
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vocabulary/due/count')
     })
 
     it('should create a new vocabulary card', async () => {
-      const mockCard = { front: 'Hello', back: 'Hola' }
+      const mockCard = { front: 'Hello', back: 'Hola', exampleSentence: '', sourceLanguage: '', targetLanguage: '', audioUrl: '', tagIds: [] }
       mockAxiosInstance.post.mockResolvedValue({ data: { id: 1, ...mockCard } })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.create(mockCard)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/vocabulary', mockCard)
@@ -112,10 +126,10 @@ describe('API Service', () => {
 
     it('should update a vocabulary card', async () => {
       const cardId = 1
-      const updatedCard = { front: 'Hello', back: 'Hola' }
+      const updatedCard = { front: 'Hello', back: 'Hola', exampleSentence: '', sourceLanguage: '', targetLanguage: '', audioUrl: '', tagIds: [] }
       mockAxiosInstance.put.mockResolvedValue({ data: { id: cardId, ...updatedCard } })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.update(cardId, updatedCard)
 
       expect(mockAxiosInstance.put).toHaveBeenCalledWith(`/vocabulary/${cardId}`, updatedCard)
@@ -125,7 +139,7 @@ describe('API Service', () => {
       const cardId = 1
       mockAxiosInstance.delete.mockResolvedValue({ data: { success: true } })
 
-      const { vocabularyAPI } = await import('./api.js')
+      const { vocabularyAPI } = await import('./api.ts')
       await vocabularyAPI.delete(cardId)
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(`/vocabulary/${cardId}`)
@@ -134,10 +148,10 @@ describe('API Service', () => {
 
   describe('reviewAPI', () => {
     it('should submit a review', async () => {
-      const reviewData = { cardId: 1, quality: 4 }
+      const reviewData = { cardId: 1, quality: 4 as 0 | 1 | 2 | 3 | 4 | 5 }
       mockAxiosInstance.post.mockResolvedValue({ data: { success: true } })
 
-      const { reviewAPI } = await import('./api.js')
+      const { reviewAPI } = await import('./api.ts')
       await reviewAPI.review(reviewData)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/review', reviewData)
@@ -146,20 +160,20 @@ describe('API Service', () => {
 
   describe('tagAPI', () => {
     it('should get all tags', async () => {
-      const mockTags = [{ id: 1, name: 'Spanish' }]
+      const mockTags: Tag[] = [{ id: 1, name: 'Spanish', color: '#ff0000' }]
       mockAxiosInstance.get.mockResolvedValue({ data: mockTags })
 
-      const { tagAPI } = await import('./api.js')
+      const { tagAPI } = await import('./api.ts')
       await tagAPI.getAll()
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/tags')
     })
 
     it('should create a new tag', async () => {
-      const mockTag = { name: 'French' }
+      const mockTag = { name: 'French', color: '#00ff00' }
       mockAxiosInstance.post.mockResolvedValue({ data: { id: 2, ...mockTag } })
 
-      const { tagAPI } = await import('./api.js')
+      const { tagAPI } = await import('./api.ts')
       await tagAPI.create(mockTag)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith('/tags', mockTag)
@@ -169,7 +183,7 @@ describe('API Service', () => {
       const tagId = 1
       mockAxiosInstance.delete.mockResolvedValue({ data: { success: true } })
 
-      const { tagAPI } = await import('./api.js')
+      const { tagAPI } = await import('./api.ts')
       await tagAPI.delete(tagId)
 
       expect(mockAxiosInstance.delete).toHaveBeenCalledWith(`/tags/${tagId}`)

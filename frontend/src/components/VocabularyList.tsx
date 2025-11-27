@@ -1,10 +1,13 @@
-const VocabularyList = ({ cards, onEdit, onDelete }) => {
+import React from 'react'
+import type { VocabularyListProps } from '@/types'
+
+const VocabularyList = ({ cards, onEdit, onDelete }: VocabularyListProps): React.JSX.Element => {
   if (cards.length === 0) {
     return (
       <div className="text-center py-16 px-5 text-gray-400">
         <p>No vocabulary cards yet. Create your first card to get started!</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -63,7 +66,7 @@ const VocabularyList = ({ cards, onEdit, onDelete }) => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default VocabularyList;
+export default VocabularyList
