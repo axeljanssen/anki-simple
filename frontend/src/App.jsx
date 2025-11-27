@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Review from './pages/Review';
-import './App.css';
+import VocabularyTablePage from './pages/VocabularyTablePage';
 
 function App() {
   return (
@@ -19,6 +19,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vocabulary-table"
+            element={
+              <ProtectedRoute>
+                <VocabularyTablePage />
               </ProtectedRoute>
             }
           />

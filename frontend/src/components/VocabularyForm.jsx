@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import './VocabularyForm.css';
 
 const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -46,12 +45,12 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
   };
 
   return (
-    <div className="vocabulary-form">
-      <h3>{card ? 'Edit Card' : 'Create New Card'}</h3>
+    <div className="bg-white p-8 rounded-xl shadow-md mb-8">
+      <h3 className="mt-0 mb-5 text-gray-800 text-xl font-semibold">{card ? 'Edit Card' : 'Create New Card'}</h3>
       <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="front">Front (Word/Question) *</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="mb-5">
+            <label htmlFor="front" className="block mb-2 text-gray-600 font-medium text-sm">Front (Word/Question) *</label>
             <input
               type="text"
               id="front"
@@ -59,10 +58,11 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
               value={formData.front}
               onChange={handleChange}
               required
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="back">Back (Translation/Answer) *</label>
+          <div className="mb-5">
+            <label htmlFor="back" className="block mb-2 text-gray-600 font-medium text-sm">Back (Translation/Answer) *</label>
             <input
               type="text"
               id="back"
@@ -70,24 +70,26 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
               value={formData.back}
               onChange={handleChange}
               required
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="exampleSentence">Example Sentence</label>
+        <div className="mb-5">
+          <label htmlFor="exampleSentence" className="block mb-2 text-gray-600 font-medium text-sm">Example Sentence</label>
           <textarea
             id="exampleSentence"
             name="exampleSentence"
             value={formData.exampleSentence}
             onChange={handleChange}
             rows="3"
+            className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200 font-sans"
           />
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="sourceLanguage">Source Language</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="mb-5">
+            <label htmlFor="sourceLanguage" className="block mb-2 text-gray-600 font-medium text-sm">Source Language</label>
             <input
               type="text"
               id="sourceLanguage"
@@ -95,10 +97,11 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
               value={formData.sourceLanguage}
               onChange={handleChange}
               placeholder="e.g., EN"
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="targetLanguage">Target Language</label>
+          <div className="mb-5">
+            <label htmlFor="targetLanguage" className="block mb-2 text-gray-600 font-medium text-sm">Target Language</label>
             <input
               type="text"
               id="targetLanguage"
@@ -106,12 +109,13 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
               value={formData.targetLanguage}
               onChange={handleChange}
               placeholder="e.g., ES"
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
             />
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="audioUrl">Audio URL</label>
+        <div className="mb-5">
+          <label htmlFor="audioUrl" className="block mb-2 text-gray-600 font-medium text-sm">Audio URL</label>
           <input
             type="url"
             id="audioUrl"
@@ -119,22 +123,24 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
             value={formData.audioUrl}
             onChange={handleChange}
             placeholder="https://example.com/audio.mp3"
+            className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
           />
         </div>
 
         {tags && tags.length > 0 && (
-          <div className="form-group">
-            <label>Tags</label>
-            <div className="tags-selection">
+          <div className="mb-5">
+            <label className="block mb-2 text-gray-600 font-medium text-sm">Tags</label>
+            <div className="flex flex-wrap gap-3">
               {tags.map((tag) => (
-                <label key={tag.id} className="tag-checkbox">
+                <label key={tag.id} className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.tagIds.includes(tag.id)}
                     onChange={() => handleTagToggle(tag.id)}
+                    className="w-auto mr-2"
                   />
                   <span
-                    className="tag-label"
+                    className="tag-pill"
                     style={{ backgroundColor: tag.color || '#ddd' }}
                   >
                     {tag.name}
@@ -145,11 +151,11 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }) => {
           </div>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="btn-primary">
+        <div className="flex gap-3 mt-5">
+          <button type="submit" className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-transform hover:-translate-y-0.5 shadow-md">
             {card ? 'Update Card' : 'Create Card'}
           </button>
-          <button type="button" onClick={onCancel} className="btn-cancel">
+          <button type="button" onClick={onCancel} className="px-6 py-3 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer transition-colors hover:bg-gray-200">
             Cancel
           </button>
         </div>

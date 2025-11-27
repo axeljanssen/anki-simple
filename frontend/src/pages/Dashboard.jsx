@@ -1,25 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { vocabularyAPI, tagAPI } from '../services/api';
-import VocabularyList from '../components/VocabularyList';
-import VocabularyForm from '../components/VocabularyForm';
-import './Dashboard.css';
+import { vocabularyAPI } from '../services/api';
 
 const Dashboard = () => {
   const [cards, setCards] = useState([]);
-  const [tags, setTags] = useState([]);
   const [dueCount, setDueCount] = useState(0);
-  const [showForm, setShowForm] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    loadCards();
-    loadTags();
-    loadDueCount();
-  }, []);
 
   const loadCards = async () => {
     try {
@@ -27,15 +15,6 @@ const Dashboard = () => {
       setCards(response.data);
     } catch (error) {
       console.error('Failed to load cards:', error);
-    }
-  };
-
-  const loadTags = async () => {
-    try {
-      const response = await tagAPI.getAll();
-      setTags(response.data);
-    } catch (error) {
-      console.error('Failed to load tags:', error);
     }
   };
 
@@ -48,99 +27,44 @@ const Dashboard = () => {
     }
   };
 
-  const handleSaveCard = async (cardData) => {
-    try {
-      if (editingCard) {
-        await vocabularyAPI.update(editingCard.id, cardData);
-      } else {
-        await vocabularyAPI.create(cardData);
-      }
-      setShowForm(false);
-      setEditingCard(null);
-      loadCards();
-      loadDueCount();
-    } catch (error) {
-      console.error('Failed to save card:', error);
-    }
-  };
-
-  const handleEditCard = (card) => {
-    setEditingCard(card);
-    setShowForm(true);
-  };
-
-  const handleDeleteCard = async (id) => {
-    if (window.confirm('Are you sure you want to delete this card?')) {
-      try {
-        await vocabularyAPI.delete(id);
-        loadCards();
-        loadDueCount();
-      } catch (error) {
-        console.error('Failed to delete card:', error);
-      }
-    }
-  };
-
   const handleStartReview = () => {
     navigate('/review');
   };
 
+  useEffect(() => {
+    loadCards();
+    loadDueCount();
+  }, []);
+
   return (
-    <div className="dashboard">
-      <header className="dashboard-header">
-        <h1>Simple Anki</h1>
-        <div className="header-actions">
-          <span className="user-info">Welcome, {user?.username}</span>
-          <button onClick={logout} className="btn-secondary">Logout</button>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-10 py-5 flex justify-between items-center shadow-md">
+        <h1 className="m-0 text-2xl font-semibold">Simple Anki</h1>
+        <div className="flex items-center gap-5">
+          <button onClick={() => navigate('/vocabulary-table')} className="px-4 py-2 bg-white/20 text-white border border-white rounded-lg text-sm cursor-pointer transition-colors hover:bg-white/30">
+            Table View
+          </button>
+          <span className="text-sm">Welcome, {user?.username}</span>
+          <button onClick={logout} className="px-4 py-2 bg-white/20 text-white border border-white rounded-lg text-sm cursor-pointer transition-colors hover:bg-white/30">Logout</button>
         </div>
       </header>
 
-      <div className="dashboard-content">
-        <div className="stats-section">
-          <div className="stat-card">
-            <h3>Total Cards</h3>
-            <p className="stat-value">{cards.length}</p>
+      <div className="max-w-7xl mx-auto px-5 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+          <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+            <h3 className="m-0 mb-4 text-gray-600 text-base font-medium">Total Cards</h3>
+            <p className="text-5xl font-bold text-gray-800 m-0">{cards.length}</p>
           </div>
-          <div className="stat-card due">
-            <h3>Cards Due</h3>
-            <p className="stat-value">{dueCount}</p>
+          <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+            <h3 className="m-0 mb-4 text-gray-600 text-base font-medium">Cards Due</h3>
+            <p className="text-5xl font-bold text-blue-600 m-0">{dueCount}</p>
             {dueCount > 0 && (
-              <button onClick={handleStartReview} className="btn-primary">
+              <button onClick={handleStartReview} className="mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-transform hover:-translate-y-0.5 shadow-lg">
                 Start Review
               </button>
             )}
           </div>
         </div>
-
-        <div className="actions-section">
-          <button
-            onClick={() => {
-              setEditingCard(null);
-              setShowForm(!showForm);
-            }}
-            className="btn-primary"
-          >
-            {showForm ? 'Cancel' : 'Add New Card'}
-          </button>
-        </div>
-
-        {showForm && (
-          <VocabularyForm
-            card={editingCard}
-            tags={tags}
-            onSave={handleSaveCard}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingCard(null);
-            }}
-          />
-        )}
-
-        <VocabularyList
-          cards={cards}
-          onEdit={handleEditCard}
-          onDelete={handleDeleteCard}
-        />
       </div>
     </div>
   );
