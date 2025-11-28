@@ -35,7 +35,7 @@ npm run lint             # Run ESLint
 - **Spring Boot 3.4.1** with Java 21
 - **Layered architecture**: Controllers → Services → Repositories → Entities
 - **JWT authentication** with Spring Security
-- **H2 in-memory database** for development
+- **H2 file-based database** for development (persists in `~/.anki-simple/`)
 - **Domain modules**: `user`, `vocabulary`, `review`, `tag`
 - **RFC 7807 Problem Details** for error responses
 - **Comprehensive test suite** with 40+ tests
@@ -94,7 +94,7 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 - **Backend API**: `http://localhost:8080/api`
 - **Frontend Dev Server**: `http://localhost:5173`
 - **H2 Database Console**: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:ankidb`
+  - JDBC URL: `jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE`
   - Username: `sa`
   - Password: (empty)
 
@@ -120,7 +120,7 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 
 **Backend** (`application.properties`):
 - Server port: `8080`
-- Database: H2 in-memory
+- Database: H2 file-based (persists in `~/.anki-simple/ankidb.mv.db`)
 - JWT expiration: `86400000ms` (24 hours)
 - CORS allowed origin: `http://localhost:5173`
 
@@ -173,10 +173,11 @@ npm run lint                          # ESLint
 
 ## Database
 
-**Development** (H2 in-memory):
-- Resets on application restart
-- Good for development and testing
-- Access via H2 console for debugging
+**Development** (H2 file-based):
+- Data persists between application restarts in `~/.anki-simple/` directory
+- H2 console accessible while app is running (AUTO_SERVER mode)
+- To reset database: Stop app, delete `~/.anki-simple/ankidb.mv.db`, restart app
+- Tests use in-memory H2 for speed (see `application-test.properties`)
 
 **Main Tables**:
 - `users` - User accounts
@@ -214,9 +215,11 @@ npm run lint                          # ESLint
 - Check backend logs for JWT validation errors
 
 **Database issues**:
-- Remember H2 database resets on restart
-- Use H2 console to inspect data
+- Database persists in `~/.anki-simple/ankidb.mv.db`
+- To reset database: Stop backend, delete database file, restart
+- Use H2 console to inspect data while app is running
 - Check entity annotations and relationships
+- Database file location is independent of project directory
 
 ## Additional Resources
 

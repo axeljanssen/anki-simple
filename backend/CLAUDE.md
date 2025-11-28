@@ -25,7 +25,7 @@ mvn package
 - **Spring Data JPA** - Database access
 - **Spring Security** - Authentication & authorization
 - **JWT (jjwt 0.11.5)** - Token-based authentication
-- **H2 Database** - In-memory database (development)
+- **H2 Database** - File-based database (development, persists in `~/.anki-simple/`)
 - **Flyway** - Database migration and versioning
 - **Lombok** - Reduce boilerplate code
 - **Maven** - Build tool
@@ -284,21 +284,31 @@ public class VocabularyService {
 
 ## Database Configuration
 
-### H2 In-Memory Database
+### H2 File-Based Database
 
 Configuration in `application.properties`:
 ```properties
-spring.datasource.url=jdbc:h2:mem:ankidb
+spring.datasource.url=jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE
 spring.datasource.username=sa
 spring.datasource.password=
 ```
 
-**Important**: Database resets on application restart. Data is NOT persisted.
+**Features**:
+- Data persists between application restarts in `~/.anki-simple/` directory
+- AUTO_SERVER mode allows H2 console access while app is running
+- To reset database: Stop app, delete `~/.anki-simple/ankidb.mv.db`, restart app
+
+**Test Configuration**:
+Tests use in-memory H2 for speed via `application-test.properties`:
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+```
+Integration tests use `@ActiveProfiles("test")` annotation to load test config.
 
 ### H2 Console
 
 Access at: `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:mem:ankidb`
+- JDBC URL: `jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE`
 - Username: `sa`
 - Password: (empty)
 
@@ -448,7 +458,7 @@ mvn test jacoco:report
 1. View migration status: Check `flyway_schema_history` table in H2 console
 2. Failed migration: Fix the SQL, delete failed entry from history table, restart
 3. Schema mismatch: Ensure entity annotations match migration scripts
-4. For H2 in-memory: Database resets on restart, migrations reapply automatically
+4. Database persists in `~/.anki-simple/ankidb.mv.db` - delete file to reset
 
 ### Security Considerations
 
@@ -489,10 +499,12 @@ mvn test -X
 ```
 
 **Database issues:**
-- Remember H2 is in-memory and resets on restart
+- Database persists in `~/.anki-simple/ankidb.mv.db`
+- To reset database: Stop backend, delete database file, restart
+- Use H2 console to inspect data while app is running (AUTO_SERVER mode)
 - Check entity annotations and relationships
 - Verify application.properties database settings
-- Use H2 console to inspect actual data
+- Tests use in-memory H2 (see `application-test.properties`)
 
 ## IDE Setup
 
