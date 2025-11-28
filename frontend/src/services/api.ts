@@ -7,6 +7,7 @@ import {
   SignupData,
   VocabularyFormData,
   ReviewSubmission,
+  VocabularyQueryParams,
 } from '@/types'
 
 const API_BASE_URL = 'http://localhost:8080/api'
@@ -37,7 +38,15 @@ export const authAPI = {
 }
 
 export const vocabularyAPI = {
-  getAll: () => api.get<VocabularyCard[]>('/vocabulary'),
+  getAll: (params?: VocabularyQueryParams) => {
+    const queryParams = new URLSearchParams()
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection)
+    if (params?.searchTerm) queryParams.append('searchTerm', params.searchTerm)
+
+    const queryString = queryParams.toString()
+    return api.get<VocabularyCard[]>(`/vocabulary${queryString ? `?${queryString}` : ''}`)
+  },
   getDue: () => api.get<VocabularyCard[]>('/vocabulary/due'),
   getDueCount: () => api.get<number>('/vocabulary/due/count'),
   create: (data: VocabularyFormData) => api.post<VocabularyCard>('/vocabulary', data),

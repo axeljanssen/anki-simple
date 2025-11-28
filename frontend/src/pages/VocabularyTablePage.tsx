@@ -1,30 +1,41 @@
 import React, { useState, useEffect, MouseEvent, ChangeEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { vocabularyAPI, tagAPI } from '@/services/api'
 import VocabularyTable from '@/components/VocabularyTable'
 import VocabularyForm from '@/components/VocabularyForm'
-import type { VocabularyCard, Tag, VocabularyFormData } from '@/types'
+import type { VocabularyCard, Tag, VocabularyFormData, SortableField, SortDirection } from '@/types'
 import { AxiosError } from 'axios'
 
 const VocabularyTablePage = (): React.JSX.Element => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [cards, setCards] = useState<VocabularyCard[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [showForm, setShowForm] = useState<boolean>(false)
   const [editingCard, setEditingCard] = useState<VocabularyCard | null>(null)
-  const [searchTerm, setSearchTerm] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  // Get current sort and search state from URL
+  const sortBy = searchParams.get('sortBy') as SortableField | null
+  const sortDirection = searchParams.get('sortDirection') as SortDirection | null
+  const searchTerm = searchParams.get('searchTerm') || ''
+
   useEffect(() => {
     loadCards()
     loadTags()
-  }, [])
+  }, [searchParams])
 
   const loadCards = async (): Promise<void> => {
+    setLoading(true)
     try {
-      const response = await vocabularyAPI.getAll()
+      const params = {
+        sortBy: sortBy || undefined,
+        sortDirection: sortDirection || undefined,
+        searchTerm: searchTerm || undefined,
+      }
+      const response = await vocabularyAPI.getAll(params)
       setCards(response.data)
     } catch (error) {
       const axiosError = error as AxiosError
@@ -42,6 +53,41 @@ const VocabularyTablePage = (): React.JSX.Element => {
       const axiosError = error as AxiosError
       console.error('Failed to load tags:', axiosError)
     }
+  }
+
+  const handleSort = (field: SortableField): void => {
+    const newParams = new URLSearchParams(searchParams)
+
+    // If clicking the same field, toggle direction
+    if (sortBy === field) {
+      const newDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+      newParams.set('sortDirection', newDirection)
+    } else {
+      // New field, default to ascending
+      newParams.set('sortBy', field)
+      newParams.set('sortDirection', 'asc')
+    }
+
+    setSearchParams(newParams)
+  }
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value
+    const newParams = new URLSearchParams(searchParams)
+
+    if (value) {
+      newParams.set('searchTerm', value)
+    } else {
+      newParams.delete('searchTerm')
+    }
+
+    setSearchParams(newParams)
+  }
+
+  const handleClearSearch = (): void => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('searchTerm')
+    setSearchParams(newParams)
   }
 
   const handleSaveCard = async (cardData: VocabularyFormData): Promise<void> => {
@@ -125,11 +171,11 @@ const VocabularyTablePage = (): React.JSX.Element => {
               className="w-full py-3 pr-10 pl-4 border-2 border-gray-300 rounded-lg text-sm transition-all duration-300 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
               placeholder="Search cards by front, back, or example..."
               value={searchTerm}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
             {searchTerm && (
               <button
-                onClick={() => setSearchTerm('')}
+                onClick={handleClearSearch}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent border-none text-gray-400 text-xl cursor-pointer px-2 py-1 leading-none transition-colors duration-200 hover:text-gray-800"
                 aria-label="Clear search"
               >
@@ -148,7 +194,10 @@ const VocabularyTablePage = (): React.JSX.Element => {
             cards={cards}
             onEdit={handleEditCard}
             onDelete={handleDeleteCard}
-            searchTerm={searchTerm}
+            sortBy={sortBy || undefined}
+            sortDirection={sortDirection || undefined}
+            onSort={handleSort}
+            loading={loading}
           />
         )}
 

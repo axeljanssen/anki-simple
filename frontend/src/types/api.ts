@@ -14,3 +14,13 @@ export interface ProblemDetails {
   instance: string
   timestamp: string
 }
+
+// Sorting types
+export type SortDirection = 'asc' | 'desc'
+export type SortableField = 'front' | 'back'
+
+export interface VocabularyQueryParams {
+  sortBy?: SortableField
+  sortDirection?: SortDirection
+  searchTerm?: string
+}

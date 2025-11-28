@@ -28,8 +28,12 @@ public class VocabularyController {
 
     @GetMapping
     public ResponseEntity<List<VocabularyCardResponse>> getAllCards(
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDirection,
+            @RequestParam(required = false) String searchTerm,
             @AuthenticationPrincipal UserDetails userDetails) {
-        List<VocabularyCardResponse> cards = vocabularyService.getAllCards(userDetails.getUsername());
+        List<VocabularyCardResponse> cards = vocabularyService.getAllCards(
+                userDetails.getUsername(), sortBy, sortDirection, searchTerm);
         return ResponseEntity.ok(cards);
     }
 

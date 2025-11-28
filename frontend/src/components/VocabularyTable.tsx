@@ -1,23 +1,25 @@
-import React, { useMemo } from 'react'
-import type { VocabularyTableProps } from '@/types'
+import React from 'react'
+import type { VocabularyTableProps, SortableField } from '@/types'
 
-interface VocabularyTablePropsExtended extends VocabularyTableProps {
-  searchTerm?: string
-}
+const VocabularyTable = ({
+  cards,
+  onEdit,
+  onDelete,
+  sortBy,
+  sortDirection,
+  onSort,
+  loading = false
+}: VocabularyTableProps): React.JSX.Element => {
+  const getSortIcon = (field: SortableField): string => {
+    if (sortBy !== field) return '↕'
+    return sortDirection === 'asc' ? '↑' : '↓'
+  }
 
-const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }: VocabularyTablePropsExtended): React.JSX.Element => {
-  const filteredCards = useMemo(() => {
-    if (!searchTerm) {
-      return cards
+  const handleSortClick = (field: SortableField): void => {
+    if (!loading) {
+      onSort(field)
     }
-
-    const term = searchTerm.toLowerCase()
-    return cards.filter(card =>
-      card.front.toLowerCase().includes(term) ||
-      card.back.toLowerCase().includes(term) ||
-      (card.exampleSentence && card.exampleSentence.toLowerCase().includes(term))
-    )
-  }, [cards, searchTerm])
+  }
 
   if (cards.length === 0) {
     return (
@@ -27,32 +29,48 @@ const VocabularyTable = ({ cards, onEdit, onDelete, searchTerm }: VocabularyTabl
     )
   }
 
-  if (filteredCards.length === 0) {
-    return (
-      <div className="bg-white py-15 px-5 rounded-lg shadow-sm text-center">
-        <p className="text-gray-600 text-base m-0">No cards match your search: &quot;{searchTerm}&quot;</p>
-      </div>
-    )
-  }
-
   return (
     <div className="bg-white p-8 rounded-lg shadow-sm">
       <div className="mb-4 text-gray-600 text-sm">
-        <span>Showing {filteredCards.length} of {cards.length} cards</span>
+        <span>Showing {cards.length} cards</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse min-w-[800px]">
           <thead>
             <tr>
-              <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Front</th>
-              <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Back</th>
+              <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span>Front</span>
+                  <button
+                    onClick={() => handleSortClick('front')}
+                    disabled={loading}
+                    className={`text-lg leading-none ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-blue-600'}`}
+                    aria-label="Sort by front"
+                  >
+                    {getSortIcon('front')}
+                  </button>
+                </div>
+              </th>
+              <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span>Back</span>
+                  <button
+                    onClick={() => handleSortClick('back')}
+                    disabled={loading}
+                    className={`text-lg leading-none ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-blue-600'}`}
+                    aria-label="Sort by back"
+                  >
+                    {getSortIcon('back')}
+                  </button>
+                </div>
+              </th>
               <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Languages</th>
               <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Tags</th>
               <th scope="col" className="bg-gray-100 px-4 py-3 text-center font-semibold text-gray-800 border-b-2 border-gray-200 w-[150px]">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCards.map((card) => (
+            {cards.map((card) => (
               <tr key={card.id} className="hover:bg-gray-50 last:border-b-0">
                 <td className="px-4 py-3 border-b border-gray-200 align-middle">{card.front}</td>
                 <td className="px-4 py-3 border-b border-gray-200 align-middle">{card.back}</td>

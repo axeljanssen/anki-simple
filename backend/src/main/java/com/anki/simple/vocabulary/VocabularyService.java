@@ -11,6 +11,7 @@ import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import com.anki.simple.vocabulary.mapper.VocabularyCardMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,12 +48,31 @@ public class VocabularyService {
     }
 
     @Transactional(readOnly = true)
-    public List<VocabularyCardResponse> getAllCards(String username) {
+    public List<VocabularyCardResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        return vocabularyRepository.findByUserId(user.getId())
-                .stream()
+        List<VocabularyCard> cards;
+
+        // Build sort object if sort parameters are provided
+        Sort sort = Sort.unsorted();
+        if (sortBy != null && !sortBy.isEmpty() && sortDirection != null && !sortDirection.isEmpty()) {
+            Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+            sort = Sort.by(direction, sortBy);
+        }
+
+        // Use search method if search term is provided, otherwise get all cards
+        if (searchTerm != null && !searchTerm.isEmpty()) {
+            cards = vocabularyRepository.searchCards(user.getId(), searchTerm, sort);
+        } else if (sort.isSorted()) {
+            cards = vocabularyRepository.findByUserId(user.getId(), sort);
+        } else {
+            cards = vocabularyRepository.findByUserId(user.getId());
+        }
+
+        return cards.stream()
                 .map(vocabularyCardMapper::toResponse)
                 .collect(Collectors.toList());
     }

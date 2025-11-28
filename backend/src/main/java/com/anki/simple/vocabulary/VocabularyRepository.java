@@ -1,5 +1,6 @@
 package com.anki.simple.vocabulary;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,8 @@ import java.util.List;
 public interface VocabularyRepository extends JpaRepository<VocabularyCard, Long> {
     List<VocabularyCard> findByUserId(Long userId);
 
+    List<VocabularyCard> findByUserId(Long userId, Sort sort);
+
     @Query("SELECT v FROM VocabularyCard v WHERE v.user.id = :userId AND v.nextReview <= :now ORDER BY v.nextReview ASC")
     List<VocabularyCard> findDueCards(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
@@ -19,4 +22,12 @@ public interface VocabularyRepository extends JpaRepository<VocabularyCard, Long
     List<VocabularyCard> findByUserIdAndTagId(@Param("userId") Long userId, @Param("tagId") Long tagId);
 
     long countByUserIdAndNextReviewBefore(Long userId, LocalDateTime now);
+
+    @Query("SELECT v FROM VocabularyCard v WHERE v.user.id = :userId " +
+           "AND (LOWER(v.front) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "OR LOWER(v.back) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "OR LOWER(v.exampleSentence) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    List<VocabularyCard> searchCards(@Param("userId") Long userId,
+                                      @Param("searchTerm") String searchTerm,
+                                      Sort sort);
 }
