@@ -11,8 +11,7 @@ export interface VocabularyCard {
   front: string
   back: string
   exampleSentence: string | null
-  sourceLanguage: string | null
-  targetLanguage: string | null
+  languageSelection: LanguageSelection | null
   audioUrl: string | null
   tags: Tag[]
   easeFactor: number
@@ -29,12 +28,21 @@ export interface Tag {
   color: string
 }
 
+export enum LanguageSelection {
+  DE_FR = 'DE_FR',
+  DE_ES = 'DE_ES'
+}
+
+export const LANGUAGE_SELECTION_LABELS: Record<LanguageSelection, string> = {
+  [LanguageSelection.DE_FR]: 'German ⇄ French',
+  [LanguageSelection.DE_ES]: 'German ⇄ Spanish'
+}
+
 export interface VocabularyFormData {
   front: string
   back: string
   exampleSentence: string
-  sourceLanguage: string
-  targetLanguage: string
+  languageSelection: LanguageSelection
   audioUrl: string
   tagIds: number[]
 }

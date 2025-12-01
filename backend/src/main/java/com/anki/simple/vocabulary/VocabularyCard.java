@@ -32,11 +32,9 @@ public class VocabularyCard {
     @Column(length = 1000)
     private String exampleSentence;
 
-    @Column(length = 10)
-    private String sourceLanguage;
-
-    @Column(length = 10)
-    private String targetLanguage;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language_selection", length = 20)
+    private LanguageSelection languageSelection;
 
     @Column(name = "audio_url")
     private String audioUrl;

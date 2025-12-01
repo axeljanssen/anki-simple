@@ -1,5 +1,6 @@
 import React from 'react'
 import type { VocabularyListProps } from '@/types'
+import { LANGUAGE_SELECTION_LABELS } from '@/types'
 
 const VocabularyList = ({ cards, onEdit, onDelete }: VocabularyListProps): React.JSX.Element => {
   if (cards.length === 0) {
@@ -29,9 +30,9 @@ const VocabularyList = ({ cards, onEdit, onDelete }: VocabularyListProps): React
                 </div>
               )}
               <div className="my-2.5">
-                {card.sourceLanguage && card.targetLanguage && (
+                {card.languageSelection && (
                   <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
-                    {card.sourceLanguage} → {card.targetLanguage}
+                    {LANGUAGE_SELECTION_LABELS[card.languageSelection]}
                   </span>
                 )}
               </div>

@@ -1,6 +1,7 @@
 package com.anki.simple.vocabulary.dto;
 
 import com.anki.simple.tag.dto.TagResponse;
+import com.anki.simple.vocabulary.LanguageSelection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,7 @@ public class VocabularyCardResponse {
     private String front;
     private String back;
     private String exampleSentence;
-    private String sourceLanguage;
-    private String targetLanguage;
+    private LanguageSelection languageSelection;
     private String audioUrl;
     private LocalDateTime createdAt;
     private LocalDateTime lastReviewed;

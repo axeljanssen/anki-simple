@@ -1,5 +1,6 @@
 package com.anki.simple.vocabulary.dto;
 
+import com.anki.simple.vocabulary.LanguageSelection;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -14,8 +15,7 @@ public class VocabularyCardRequest {
     private String back;
 
     private String exampleSentence;
-    private String sourceLanguage;
-    private String targetLanguage;
+    private LanguageSelection languageSelection;
     private String audioUrl;
     private Set<Long> tagIds;
 }

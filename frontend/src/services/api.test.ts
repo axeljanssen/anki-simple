@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest'
 import axios from 'axios'
-import { AuthResponse, VocabularyCard, Tag } from '@/types'
+import { AuthResponse, VocabularyCard, Tag, LanguageSelection } from '@/types'
 
 vi.mock('axios', () => {
   return {
@@ -115,7 +115,7 @@ describe('API Service', () => {
     })
 
     it('should create a new vocabulary card', async () => {
-      const mockCard = { front: 'Hello', back: 'Hola', exampleSentence: '', sourceLanguage: '', targetLanguage: '', audioUrl: '', tagIds: [] }
+      const mockCard = { front: 'Hello', back: 'Hola', exampleSentence: '', languageSelection: LanguageSelection.DE_FR, audioUrl: '', tagIds: [] }
       mockAxiosInstance.post.mockResolvedValue({ data: { id: 1, ...mockCard } })
 
       const { vocabularyAPI } = await import('./api.ts')
@@ -126,7 +126,7 @@ describe('API Service', () => {
 
     it('should update a vocabulary card', async () => {
       const cardId = 1
-      const updatedCard = { front: 'Hello', back: 'Hola', exampleSentence: '', sourceLanguage: '', targetLanguage: '', audioUrl: '', tagIds: [] }
+      const updatedCard = { front: 'Hello', back: 'Hola', exampleSentence: '', languageSelection: LanguageSelection.DE_FR, audioUrl: '', tagIds: [] }
       mockAxiosInstance.put.mockResolvedValue({ data: { id: cardId, ...updatedCard } })
 
       const { vocabularyAPI } = await import('./api.ts')

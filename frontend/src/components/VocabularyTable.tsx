@@ -1,5 +1,6 @@
 import React from 'react'
 import type { VocabularyTableProps, SortableField } from '@/types'
+import { LANGUAGE_SELECTION_LABELS } from '@/types'
 
 const VocabularyTable = ({
   cards,
@@ -75,9 +76,9 @@ const VocabularyTable = ({
                 <td className="px-4 py-3 border-b border-gray-200 align-middle">{card.front}</td>
                 <td className="px-4 py-3 border-b border-gray-200 align-middle">{card.back}</td>
                 <td className="px-4 py-3 border-b border-gray-200 align-middle">
-                  {card.sourceLanguage && card.targetLanguage ? (
+                  {card.languageSelection ? (
                     <span className="inline-block px-3 py-1 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-xl text-xs font-medium">
-                      {card.sourceLanguage} → {card.targetLanguage}
+                      {LANGUAGE_SELECTION_LABELS[card.languageSelection]}
                     </span>
                   ) : (
                     '-'

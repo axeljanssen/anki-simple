@@ -74,8 +74,7 @@ class VocabularyServiceTest {
     request.setFront("Hello");
     request.setBack("Hola");
     request.setExampleSentence("Hello, how are you?");
-    request.setSourceLanguage("English");
-    request.setTargetLanguage("Spanish");
+    request.setLanguageSelection(LanguageSelection.DE_ES);
 
     // Create test tag
     tag = new Tag();
@@ -97,8 +96,7 @@ class VocabularyServiceTest {
     assertThat(response.getFront()).isEqualTo("Hello");
     assertThat(response.getBack()).isEqualTo("Hola");
     assertThat(response.getExampleSentence()).isEqualTo("Hello, how are you?");
-    assertThat(response.getSourceLanguage()).isEqualTo("English");
-    assertThat(response.getTargetLanguage()).isEqualTo("Spanish");
+    assertThat(response.getLanguageSelection()).isEqualTo(LanguageSelection.DE_ES);
     assertThat(response.getEaseFactor()).isEqualTo(2.5);
     assertThat(response.getIntervalDays()).isEqualTo(0);
     assertThat(response.getRepetitions()).isEqualTo(0);
@@ -144,16 +142,14 @@ class VocabularyServiceTest {
     VocabularyCardRequest request2 = new VocabularyCardRequest();
     request2.setFront("Goodbye");
     request2.setBack("Adiós");
-    request2.setSourceLanguage("English");
-    request2.setTargetLanguage("Spanish");
+    request2.setLanguageSelection(LanguageSelection.DE_FR);
     vocabularyService.createCard(request2, user.getUsername());
 
     // Create card for other user (should not be returned)
     VocabularyCardRequest request3 = new VocabularyCardRequest();
     request3.setFront("Thanks");
     request3.setBack("Gracias");
-    request3.setSourceLanguage("English");
-    request3.setTargetLanguage("Spanish");
+    request3.setLanguageSelection(LanguageSelection.DE_ES);
     vocabularyService.createCard(request3, otherUser.getUsername());
 
     // When
@@ -200,8 +196,7 @@ class VocabularyServiceTest {
       VocabularyCardRequest req = new VocabularyCardRequest();
       req.setFront("Word" + i);
       req.setBack("Palabra" + i);
-      req.setSourceLanguage("English");
-      req.setTargetLanguage("Spanish");
+      req.setLanguageSelection(LanguageSelection.DE_ES);
       VocabularyCardResponse created = vocabularyService.createCard(req, user.getUsername());
 
       VocabularyCard card = vocabularyRepository.findById(created.getId()).get();

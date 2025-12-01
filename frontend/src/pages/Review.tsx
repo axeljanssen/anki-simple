@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vocabularyAPI, reviewAPI } from '@/services/api'
 import type { VocabularyCard } from '@/types'
+import { LANGUAGE_SELECTION_LABELS } from '@/types'
 import { AxiosError } from 'axios'
 
 const Review = (): React.JSX.Element => {
@@ -99,9 +100,9 @@ const Review = (): React.JSX.Element => {
 
       <div className="max-w-[800px] mx-auto bg-white rounded-2xl p-15 shadow-2xl min-h-[500px] flex flex-col justify-center max-md:p-8">
         <div className="text-center mb-5">
-          {currentCard.sourceLanguage && currentCard.targetLanguage && (
+          {currentCard.languageSelection && (
             <span className="inline-block px-3 py-1 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-xl text-xs font-medium">
-              {currentCard.sourceLanguage} → {currentCard.targetLanguage}
+              {LANGUAGE_SELECTION_LABELS[currentCard.languageSelection]}
             </span>
           )}
         </div>

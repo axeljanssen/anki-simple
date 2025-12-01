@@ -1,13 +1,13 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
 import type { VocabularyFormProps, VocabularyFormData } from '@/types'
+import { LanguageSelection, LANGUAGE_SELECTION_LABELS } from '@/types'
 
 const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): React.JSX.Element => {
   const [formData, setFormData] = useState<VocabularyFormData>({
     front: '',
     back: '',
     exampleSentence: '',
-    sourceLanguage: '',
-    targetLanguage: '',
+    languageSelection: LanguageSelection.DE_FR,
     audioUrl: '',
     tagIds: [],
   })
@@ -18,8 +18,7 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): 
         front: card.front || '',
         back: card.back || '',
         exampleSentence: card.exampleSentence || '',
-        sourceLanguage: card.sourceLanguage || '',
-        targetLanguage: card.targetLanguage || '',
+        languageSelection: card.languageSelection || LanguageSelection.DE_FR,
         audioUrl: card.audioUrl || '',
         tagIds: card.tags ? card.tags.map((t) => t.id) : [],
       })
@@ -34,6 +33,11 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
+  }
+
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>): void => {
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value as LanguageSelection })
   }
 
   const handleTagToggle = (tagId: number): void => {
@@ -88,31 +92,23 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): 
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="mb-5">
-            <label htmlFor="sourceLanguage" className="block mb-2 text-gray-600 font-medium text-sm">Source Language</label>
-            <input
-              type="text"
-              id="sourceLanguage"
-              name="sourceLanguage"
-              value={formData.sourceLanguage}
-              onChange={handleChange}
-              placeholder="e.g., EN"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-            />
-          </div>
-          <div className="mb-5">
-            <label htmlFor="targetLanguage" className="block mb-2 text-gray-600 font-medium text-sm">Target Language</label>
-            <input
-              type="text"
-              id="targetLanguage"
-              name="targetLanguage"
-              value={formData.targetLanguage}
-              onChange={handleChange}
-              placeholder="e.g., ES"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-            />
-          </div>
+        <div className="mb-5">
+          <label htmlFor="languageSelection" className="block mb-2 text-gray-600 font-medium text-sm">
+            Language Pair
+          </label>
+          <select
+            id="languageSelection"
+            name="languageSelection"
+            value={formData.languageSelection}
+            onChange={handleSelectChange}
+            className="w-full px-3 py-3 border border-gray-300 rounded-lg text-sm transition-colors focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
+          >
+            {Object.values(LanguageSelection).map((value) => (
+              <option key={value} value={value}>
+                {LANGUAGE_SELECTION_LABELS[value]}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="mb-5">

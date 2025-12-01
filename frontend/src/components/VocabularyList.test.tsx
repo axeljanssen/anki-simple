@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import VocabularyList from './VocabularyList'
 import type { VocabularyCard } from '@/types'
+import { LanguageSelection } from '@/types'
 
 describe('VocabularyList Component', () => {
   it('should display empty state when no cards are provided', () => {
@@ -22,8 +23,7 @@ describe('VocabularyList Component', () => {
         front: 'Hello',
         back: 'Hola',
         exampleSentence: 'Hello, how are you?',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [{ id: 1, name: 'Spanish', color: '#ff0000' }],
@@ -32,8 +32,7 @@ describe('VocabularyList Component', () => {
         id: 2,
         front: 'Goodbye',
         back: 'Adiós',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.3,
         intervalDays: 3,
         tags: [],
@@ -59,8 +58,7 @@ describe('VocabularyList Component', () => {
         front: 'Hello',
         back: 'Hola',
         exampleSentence: 'Hello, how are you?',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -81,8 +79,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -103,8 +100,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -116,7 +112,7 @@ describe('VocabularyList Component', () => {
 
     render(<VocabularyList cards={mockCards} onEdit={mockOnEdit} onDelete={mockOnDelete} />)
 
-    expect(screen.getByText('English → Spanish')).toBeInTheDocument()
+    expect(screen.getByText('German ⇄ Spanish')).toBeInTheDocument()
   })
 
   it('should display tags when provided', () => {
@@ -125,8 +121,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [
@@ -151,8 +146,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 3,
         tags: [],
@@ -173,8 +167,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -198,8 +191,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -223,8 +215,7 @@ describe('VocabularyList Component', () => {
         id: 1,
         front: 'Hello',
         back: 'Hola',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 1,
         tags: [],
@@ -233,8 +224,7 @@ describe('VocabularyList Component', () => {
         id: 2,
         front: 'Goodbye',
         back: 'Adiós',
-        sourceLanguage: 'English',
-        targetLanguage: 'Spanish',
+        languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.3,
         intervalDays: 3,
         tags: [],
