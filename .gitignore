@@ -24,3 +24,8 @@ yarn-error.log*
 *.db
 *.mv.db
 *.trace.db
+
+# SonarQube
+.sonar/
+.scannerwork/
+**/target/site/jacoco/
