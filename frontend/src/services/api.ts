@@ -47,6 +47,7 @@ export const vocabularyAPI = {
     const queryString = queryParams.toString()
     return api.get<VocabularyCard[]>(`/vocabulary${queryString ? `?${queryString}` : ''}`)
   },
+  getById: (id: number) => api.get<VocabularyCard>(`/vocabulary/${id}`),
   getDue: () => api.get<VocabularyCard[]>('/vocabulary/due'),
   getDueCount: () => api.get<number>('/vocabulary/due/count'),
   create: (data: VocabularyFormData) => api.post<VocabularyCard>('/vocabulary', data),

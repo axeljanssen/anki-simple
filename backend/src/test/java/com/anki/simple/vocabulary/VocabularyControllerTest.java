@@ -83,8 +83,8 @@ class VocabularyControllerTest {
 
   @Test
   @WithMockUser(username = "testuser")
-  @DisplayName("Given user with cards, when get all cards, then should return all cards")
-  void givenUserWithCards_whenGetAllCards_thenShouldReturnAllCards() throws Exception {
+  @DisplayName("Given user with cards, when get all cards, then should return lean responses")
+  void givenUserWithCards_whenGetAllCards_thenShouldReturnLeanResponses() throws Exception {
     // Given
     VocabularyCard card1 = new VocabularyCard();
     card1.setFront("Hello");
@@ -103,7 +103,15 @@ class VocabularyControllerTest {
     // When & Then
     mockMvc.perform(get("/api/vocabulary"))
       .andExpect(status().isOk())
-      .andExpect(jsonPath("$", hasSize(2)));
+      .andExpect(jsonPath("$", hasSize(2)))
+      .andExpect(jsonPath("$[0].id").exists())
+      .andExpect(jsonPath("$[0].front").exists())
+      .andExpect(jsonPath("$[0].back").exists())
+      .andExpect(jsonPath("$[0].languageSelection").exists())
+      // Verify lean response does NOT have extra fields
+      .andExpect(jsonPath("$[0].exampleSentence").doesNotExist())
+      .andExpect(jsonPath("$[0].tags").doesNotExist())
+      .andExpect(jsonPath("$[0].easeFactor").doesNotExist());
   }
 
   @Test
@@ -183,5 +191,35 @@ class VocabularyControllerTest {
     mockMvc.perform(delete("/api/vocabulary/" + card.getId())
         .with(csrf()))
       .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @WithMockUser(username = "testuser")
+  @DisplayName("Given card, when get card by id, then should return card")
+  void givenCard_whenGetCardById_thenShouldReturnCard() throws Exception {
+    // Given
+    VocabularyCard card = new VocabularyCard();
+    card.setFront("Hello");
+    card.setBack("Hola");
+    card.setLanguageSelection(LanguageSelection.DE_ES);
+    card.setUser(user);
+    card = vocabularyRepository.save(card);
+
+    // When & Then
+    mockMvc.perform(get("/api/vocabulary/" + card.getId()))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.front").value("Hello"))
+      .andExpect(jsonPath("$.back").value("Hola"))
+      .andExpect(jsonPath("$.languageSelection").value("DE_ES"));
+  }
+
+  @Test
+  @WithMockUser(username = "testuser")
+  @DisplayName("Given nonexistent card id, when get card by id, then should return 404")
+  void givenNonexistentCardId_whenGetCardById_thenShouldReturn404() throws Exception {
+    // When & Then
+    mockMvc.perform(get("/api/vocabulary/999"))
+      .andExpect(status().isNotFound())
+      .andExpect(jsonPath("$.title").value("Card Not Found"));
   }
 }

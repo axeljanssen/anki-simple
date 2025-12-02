@@ -66,7 +66,6 @@ const VocabularyTable = ({
                 </div>
               </th>
               <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Languages</th>
-              <th scope="col" className="bg-gray-100 px-4 py-3 text-left font-semibold text-gray-800 border-b-2 border-gray-200">Tags</th>
               <th scope="col" className="bg-gray-100 px-4 py-3 text-center font-semibold text-gray-800 border-b-2 border-gray-200 w-[150px]">Actions</th>
             </tr>
           </thead>
@@ -80,23 +79,6 @@ const VocabularyTable = ({
                     <span className="inline-block px-3 py-1 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-xl text-xs font-medium">
                       {LANGUAGE_SELECTION_LABELS[card.languageSelection]}
                     </span>
-                  ) : (
-                    '-'
-                  )}
-                </td>
-                <td className="px-4 py-3 border-b border-gray-200 align-middle">
-                  {card.tags && card.tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {card.tags.map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="tag-pill"
-                          style={{ backgroundColor: tag.color || '#ddd' }}
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                    </div>
                   ) : (
                     '-'
                   )}

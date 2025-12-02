@@ -7,6 +7,7 @@ import com.anki.simple.tag.Tag;
 import com.anki.simple.tag.TagRepository;
 import com.anki.simple.user.User;
 import com.anki.simple.user.UserRepository;
+import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -134,8 +135,8 @@ class VocabularyServiceTest {
   }
 
   @Test
-  @DisplayName("Given username, when get all cards, then should return user's cards")
-  void givenUsername_whenGetAllCards_thenShouldReturnUsersCards() {
+  @DisplayName("Given username, when get all cards, then should return lean responses")
+  void givenUsername_whenGetAllCards_thenShouldReturnLeanResponses() {
     // Given - create cards for user
     vocabularyService.createCard(request, user.getUsername());
 
@@ -153,12 +154,19 @@ class VocabularyServiceTest {
     vocabularyService.createCard(request3, otherUser.getUsername());
 
     // When
-    List<VocabularyCardResponse> responses = vocabularyService.getAllCards(user.getUsername(), null, null, null);
+    List<VocabularyCardLeanResponse> responses = vocabularyService.getAllCards(user.getUsername(), null, null, null);
 
     // Then
     assertThat(responses).hasSize(2);
-    assertThat(responses).extracting(VocabularyCardResponse::getFront)
+    assertThat(responses).extracting(VocabularyCardLeanResponse::getFront)
         .containsExactlyInAnyOrder("Hello", "Goodbye");
+
+    // Verify lean response only has 4 fields
+    VocabularyCardLeanResponse firstCard = responses.get(0);
+    assertThat(firstCard.getId()).isNotNull();
+    assertThat(firstCard.getFront()).isNotNull();
+    assertThat(firstCard.getBack()).isNotNull();
+    assertThat(firstCard.getLanguageSelection()).isNotNull();
   }
 
   @Test
@@ -300,5 +308,57 @@ class VocabularyServiceTest {
 
     // Verify card still exists
     assertThat(vocabularyRepository.findById(created.getId())).isPresent();
+  }
+
+  @Test
+  @DisplayName("Given valid card id, when get card, then should return card")
+  void givenValidCardId_whenGetCard_thenShouldReturnCard() {
+    // Given - create a card
+    VocabularyCardResponse created = vocabularyService.createCard(request, user.getUsername());
+
+    // When
+    VocabularyCardResponse response = vocabularyService.getCard(created.getId(), user.getUsername());
+
+    // Then
+    assertThat(response).isNotNull();
+    assertThat(response.getId()).isEqualTo(created.getId());
+    assertThat(response.getFront()).isEqualTo("Hello");
+    assertThat(response.getBack()).isEqualTo("Hola");
+    assertThat(response.getExampleSentence()).isEqualTo("Hello, how are you?");
+  }
+
+  @Test
+  @DisplayName("Given card not found, when get card, then should throw CardNotFoundException")
+  void givenCardNotFound_whenGetCard_thenShouldThrowException() {
+    // Given
+    Long nonExistentId = 999L;
+
+    // When & Then
+    assertThatThrownBy(() -> vocabularyService.getCard(nonExistentId, user.getUsername()))
+        .isInstanceOf(CardNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("Given unauthorized user, when get card, then should throw UnauthorizedException")
+  void givenUnauthorizedUser_whenGetCard_thenShouldThrowException() {
+    // Given - create a card for user
+    VocabularyCardResponse created = vocabularyService.createCard(request, user.getUsername());
+
+    // When & Then - try to get with other user
+    assertThatThrownBy(() -> vocabularyService.getCard(created.getId(), otherUser.getUsername()))
+        .isInstanceOf(UnauthorizedException.class)
+        .hasMessageContaining("Unauthorized");
+  }
+
+  @Test
+  @DisplayName("Given user not found, when get card, then should throw UserNotFoundException")
+  void givenUserNotFound_whenGetCard_thenShouldThrowException() {
+    // Given - create a card
+    VocabularyCardResponse created = vocabularyService.createCard(request, user.getUsername());
+
+    // When & Then - try to get with nonexistent user
+    assertThatThrownBy(() -> vocabularyService.getCard(created.getId(), "nonexistent"))
+        .isInstanceOf(UserNotFoundException.class)
+        .hasMessageContaining("User not found");
   }
 }

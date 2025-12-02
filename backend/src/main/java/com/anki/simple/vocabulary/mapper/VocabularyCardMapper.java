@@ -2,6 +2,7 @@ package com.anki.simple.vocabulary.mapper;
 
 import com.anki.simple.tag.mapper.TagMapper;
 import com.anki.simple.vocabulary.VocabularyCard;
+import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import org.mapstruct.Mapper;
@@ -14,6 +15,8 @@ public interface VocabularyCardMapper {
 
   @Mapping(target = "tags", source = "tags")
   VocabularyCardResponse toResponse(VocabularyCard card);
+
+  VocabularyCardLeanResponse toLeanResponse(VocabularyCard card);
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "user", ignore = true)

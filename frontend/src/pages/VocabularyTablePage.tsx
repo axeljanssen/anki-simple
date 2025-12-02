@@ -14,6 +14,7 @@ const VocabularyTablePage = (): React.JSX.Element => {
   const [showForm, setShowForm] = useState<boolean>(false)
   const [editingCard, setEditingCard] = useState<VocabularyCard | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [loadingCard, setLoadingCard] = useState<boolean>(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -106,9 +107,28 @@ const VocabularyTablePage = (): React.JSX.Element => {
     }
   }
 
-  const handleEditCard = (card: VocabularyCard): void => {
-    setEditingCard(card)
-    setShowForm(true)
+  const handleEditCard = async (card: VocabularyCard): Promise<void> => {
+    setLoadingCard(true)
+    try {
+      // Fetch fresh card data from server
+      const response = await vocabularyAPI.getById(card.id)
+      setEditingCard(response.data)
+      setShowForm(true)
+    } catch (error) {
+      const axiosError = error as AxiosError<{ detail?: string }>
+
+      if (axiosError.response?.status === 404) {
+        alert('This card no longer exists. Refreshing the list...')
+        loadCards()
+      } else if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        alert('You do not have permission to edit this card.')
+      } else {
+        console.error('Failed to load card:', axiosError)
+        alert('Failed to load card for editing. Please try again.')
+      }
+    } finally {
+      setLoadingCard(false)
+    }
   }
 
   const handleDeleteCard = async (id: number): Promise<void> => {
@@ -205,6 +225,14 @@ const VocabularyTablePage = (): React.JSX.Element => {
             onSort={handleSort}
             loading={loading}
           />
+        )}
+
+        {loadingCard && (
+          <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-[999]">
+            <div className="bg-white py-4 px-6 rounded-lg shadow-lg text-gray-800">
+              Loading card...
+            </div>
+          </div>
         )}
 
         {showForm && (

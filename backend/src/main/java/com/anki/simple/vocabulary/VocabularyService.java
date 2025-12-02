@@ -7,6 +7,7 @@ import com.anki.simple.tag.Tag;
 import com.anki.simple.tag.TagRepository;
 import com.anki.simple.user.User;
 import com.anki.simple.user.UserRepository;
+import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import com.anki.simple.vocabulary.mapper.VocabularyCardMapper;
@@ -48,7 +49,7 @@ public class VocabularyService {
     }
 
     @Transactional(readOnly = true)
-    public List<VocabularyCardResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
+    public List<VocabularyCardLeanResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -73,7 +74,7 @@ public class VocabularyService {
         }
 
         return cards.stream()
-                .map(vocabularyCardMapper::toResponse)
+                .map(vocabularyCardMapper::toLeanResponse)
                 .collect(Collectors.toList());
     }
 
@@ -94,6 +95,21 @@ public class VocabularyService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return vocabularyRepository.countByUserIdAndNextReviewBefore(user.getId(), LocalDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public VocabularyCardResponse getCard(Long id, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        VocabularyCard card = vocabularyRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
+
+        if (!card.getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedException("Unauthorized access to card");
+        }
+
+        return vocabularyCardMapper.toResponse(card);
     }
 
     @Transactional

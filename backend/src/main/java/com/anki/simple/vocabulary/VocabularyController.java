@@ -1,5 +1,6 @@
 package com.anki.simple.vocabulary;
 
+import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import jakarta.validation.Valid;
@@ -27,12 +28,12 @@ public class VocabularyController {
     }
 
     @GetMapping
-    public ResponseEntity<List<VocabularyCardResponse>> getAllCards(
+    public ResponseEntity<List<VocabularyCardLeanResponse>> getAllCards(
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) String searchTerm,
             @AuthenticationPrincipal UserDetails userDetails) {
-        List<VocabularyCardResponse> cards = vocabularyService.getAllCards(
+        List<VocabularyCardLeanResponse> cards = vocabularyService.getAllCards(
                 userDetails.getUsername(), sortBy, sortDirection, searchTerm);
         return ResponseEntity.ok(cards);
     }
@@ -49,6 +50,14 @@ public class VocabularyController {
             @AuthenticationPrincipal UserDetails userDetails) {
         long count = vocabularyService.getDueCardsCount(userDetails.getUsername());
         return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VocabularyCardResponse> getCard(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        VocabularyCardResponse response = vocabularyService.getCard(id, userDetails.getUsername());
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")

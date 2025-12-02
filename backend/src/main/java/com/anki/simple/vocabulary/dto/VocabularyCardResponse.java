@@ -12,7 +12,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class VocabularyCardResponse {
+public class  VocabularyCardResponse {
     private Long id;
     private String front;
     private String back;
