@@ -49,10 +49,7 @@ public class VocabularyService {
     }
 
     @Transactional(readOnly = true)
-    public List<VocabularyCardLeanResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
+    public List<VocabularyCardLeanResponse> getAllCards(User user, String sortBy, String sortDirection, String searchTerm) {
         List<VocabularyCard> cards;
 
         // Build sort object if sort parameters are provided

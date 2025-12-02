@@ -1,5 +1,8 @@
 package com.anki.simple.vocabulary;
 
+import com.anki.simple.exception.UserNotFoundException;
+import com.anki.simple.user.User;
+import com.anki.simple.user.UserRepository;
 import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
@@ -18,6 +21,7 @@ import java.util.List;
 public class VocabularyController {
 
     private final VocabularyService vocabularyService;
+    private final UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<VocabularyCardResponse> createCard(
@@ -33,8 +37,10 @@ public class VocabularyController {
             @RequestParam(required = false) String sortDirection,
             @RequestParam(required = false) String searchTerm,
             @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         List<VocabularyCardLeanResponse> cards = vocabularyService.getAllCards(
-                userDetails.getUsername(), sortBy, sortDirection, searchTerm);
+                user, sortBy, sortDirection, searchTerm);
         return ResponseEntity.ok(cards);
     }
 
