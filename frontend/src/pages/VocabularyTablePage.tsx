@@ -147,6 +147,12 @@ const VocabularyTablePage = (): React.JSX.Element => {
           >
             Grid View
           </button>
+          <button
+            onClick={() => navigate('/tags')}
+            className="bg-white/20 text-white px-5 py-2.5 border-none rounded-md cursor-pointer font-medium transition-all duration-300 hover:bg-white/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20"
+          >
+            Manage Tags
+          </button>
           <span className="text-white text-sm">Welcome, {user?.username}</span>
           <button
             onClick={logout}

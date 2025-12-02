@@ -26,6 +26,15 @@ public class TagController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<TagResponse> updateTag(
+            @PathVariable Long id,
+            @Valid @RequestBody TagRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        TagResponse response = tagService.updateTag(id, request, userDetails.getUsername());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     public ResponseEntity<List<TagResponse>> getAllTags(
             @AuthenticationPrincipal UserDetails userDetails) {

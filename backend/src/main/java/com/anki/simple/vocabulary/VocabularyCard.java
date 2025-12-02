@@ -6,12 +6,10 @@ import com.anki.simple.review.ReviewHistory;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.repository.cdi.Eager;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "vocabulary_cards")
@@ -61,7 +59,7 @@ public class VocabularyCard {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "card_tags",
         joinColumns = @JoinColumn(name = "card_id"),
@@ -76,5 +74,18 @@ public class VocabularyCard {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         nextReview = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VocabularyCard that = (VocabularyCard) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

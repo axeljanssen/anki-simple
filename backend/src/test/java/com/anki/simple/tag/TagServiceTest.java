@@ -221,4 +221,93 @@ class TagServiceTest {
       .isInstanceOf(UserNotFoundException.class)
       .hasMessageContaining("User not found");
   }
+
+  @Test
+  @DisplayName("Given valid tag, when update tag, then should update and return tag")
+  void givenValidTag_whenUpdateTag_thenShouldUpdateAndReturnTag() {
+    // Given
+    TagResponse createdTag = tagService.createTag(tagRequest, user.getUsername());
+    TagRequest updateRequest = new TagRequest();
+    updateRequest.setName("Updated Name");
+    updateRequest.setColor("#00FF00");
+
+    // When
+    TagResponse response = tagService.updateTag(createdTag.getId(), updateRequest, user.getUsername());
+
+    // Then
+    assertThat(response).isNotNull();
+    assertThat(response.getId()).isEqualTo(createdTag.getId());
+    assertThat(response.getName()).isEqualTo("Updated Name");
+    assertThat(response.getColor()).isEqualTo("#00FF00");
+
+    // Verify tag is updated in database
+    Tag updatedTag = tagRepository.findById(response.getId()).orElseThrow();
+    assertThat(updatedTag.getName()).isEqualTo("Updated Name");
+    assertThat(updatedTag.getColor()).isEqualTo("#00FF00");
+  }
+
+  @Test
+  @DisplayName("Given nonexistent tag, when update tag, then should throw TagNotFoundException")
+  void givenNonexistentTag_whenUpdateTag_thenShouldThrowTagNotFoundException() {
+    // Given
+    TagRequest updateRequest = new TagRequest();
+    updateRequest.setName("Updated Name");
+    updateRequest.setColor("#00FF00");
+
+    // When & Then
+    assertThatThrownBy(() -> tagService.updateTag(999L, updateRequest, user.getUsername()))
+      .isInstanceOf(TagNotFoundException.class)
+      .hasMessageContaining("999");
+  }
+
+  @Test
+  @DisplayName("Given tag owned by other user, when update tag, then should throw UnauthorizedException")
+  void givenTagOwnedByOtherUser_whenUpdateTag_thenShouldThrowUnauthorizedException() {
+    // Given
+    TagResponse createdTag = tagService.createTag(tagRequest, user.getUsername());
+    TagRequest updateRequest = new TagRequest();
+    updateRequest.setName("Updated Name");
+    updateRequest.setColor("#00FF00");
+
+    // When & Then
+    assertThatThrownBy(() -> tagService.updateTag(createdTag.getId(), updateRequest, otherUser.getUsername()))
+      .isInstanceOf(UnauthorizedException.class)
+      .hasMessageContaining("Unauthorized access to tag");
+  }
+
+  @Test
+  @DisplayName("Given duplicate tag name, when update tag, then should throw TagAlreadyExistsException")
+  void givenDuplicateTagName_whenUpdateTag_thenShouldThrowTagAlreadyExistsException() {
+    // Given
+    TagResponse tag1 = tagService.createTag(tagRequest, user.getUsername());
+    TagRequest tag2Request = new TagRequest();
+    tag2Request.setName("Verbs");
+    tag2Request.setColor("#00FF00");
+    TagResponse tag2 = tagService.createTag(tag2Request, user.getUsername());
+
+    // Try to update tag2 with tag1's name
+    TagRequest updateRequest = new TagRequest();
+    updateRequest.setName("Greetings");
+    updateRequest.setColor("#0000FF");
+
+    // When & Then
+    assertThatThrownBy(() -> tagService.updateTag(tag2.getId(), updateRequest, user.getUsername()))
+      .isInstanceOf(TagAlreadyExistsException.class)
+      .hasMessageContaining("Greetings");
+  }
+
+  @Test
+  @DisplayName("Given nonexistent user, when update tag, then should throw UserNotFoundException")
+  void givenNonexistentUser_whenUpdateTag_thenShouldThrowUserNotFoundException() {
+    // Given
+    TagResponse createdTag = tagService.createTag(tagRequest, user.getUsername());
+    TagRequest updateRequest = new TagRequest();
+    updateRequest.setName("Updated Name");
+    updateRequest.setColor("#00FF00");
+
+    // When & Then
+    assertThatThrownBy(() -> tagService.updateTag(createdTag.getId(), updateRequest, "nonexistentuser"))
+      .isInstanceOf(UserNotFoundException.class)
+      .hasMessageContaining("User not found");
+  }
 }

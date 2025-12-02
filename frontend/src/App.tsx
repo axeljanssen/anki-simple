@@ -7,6 +7,7 @@ import Signup from '@/pages/Signup'
 import Dashboard from '@/pages/Dashboard'
 import Review from '@/pages/Review'
 import VocabularyTablePage from '@/pages/VocabularyTablePage'
+import TagsPage from '@/pages/TagsPage'
 
 function App(): React.JSX.Element {
   return (
@@ -36,6 +37,14 @@ function App(): React.JSX.Element {
             element={
               <ProtectedRoute>
                 <Review />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tags"
+            element={
+              <ProtectedRoute>
+                <TagsPage />
               </ProtectedRoute>
             }
           />

@@ -1,6 +1,6 @@
 // Component prop types
 import { ReactNode } from 'react'
-import { VocabularyCard, Tag, VocabularyFormData } from './models'
+import { VocabularyCard, Tag, VocabularyFormData, TagFormData } from './models'
 import { SortableField, SortDirection } from './api'
 
 export interface ProtectedRouteProps {
@@ -27,5 +27,11 @@ export interface VocabularyFormProps {
   card: VocabularyCard | null
   tags: Tag[]
   onSave: (data: VocabularyFormData) => void
+  onCancel: () => void
+}
+
+export interface TagFormProps {
+  tag: Tag | null
+  onSave: (data: TagFormData) => void
   onCancel: () => void
 }

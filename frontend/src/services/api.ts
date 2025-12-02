@@ -62,6 +62,7 @@ export const reviewAPI = {
 export const tagAPI = {
   getAll: () => api.get<Tag[]>('/tags'),
   create: (data: { name: string; color: string }) => api.post<Tag>('/tags', data),
+  update: (id: number, data: { name: string; color: string }) => api.put<Tag>(`/tags/${id}`, data),
   delete: (id: number) => api.delete<void>(`/tags/${id}`),
 }
 

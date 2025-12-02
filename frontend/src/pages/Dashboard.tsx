@@ -48,6 +48,9 @@ const Dashboard = (): React.JSX.Element => {
           <button onClick={() => navigate('/vocabulary-table')} className="px-4 py-2 bg-white/20 text-white border border-white rounded-lg text-sm cursor-pointer transition-colors hover:bg-white/30">
             Table View
           </button>
+          <button onClick={() => navigate('/tags')} className="px-4 py-2 bg-white/20 text-white border border-white rounded-lg text-sm cursor-pointer transition-colors hover:bg-white/30">
+            Manage Tags
+          </button>
           <span className="text-sm">Welcome, {user?.username}</span>
           <button onClick={logout} className="px-4 py-2 bg-white/20 text-white border border-white rounded-lg text-sm cursor-pointer transition-colors hover:bg-white/30">Logout</button>
         </div>

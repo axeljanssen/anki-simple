@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react'
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo, ReactNode } from 'react'
 import { AxiosError } from 'axios'
 import { authAPI } from '@/services/api'
 import { User, LoginCredentials, SignupData, AuthContextValue, AuthResult } from '@/types'
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
     setLoading(false)
   }, [])
 
-  const login = async (credentials: LoginCredentials): Promise<AuthResult> => {
+  const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResult> => {
     try {
       const response = await authAPI.login(credentials)
       const { token, username, email } = response.data
@@ -39,9 +39,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
       const axiosError = error as AxiosError<{ message?: string }>
       return { success: false, error: axiosError.response?.data?.message || 'Login failed' }
     }
-  }
+  }, [])
 
-  const signup = async (userData: SignupData): Promise<AuthResult> => {
+  const signup = useCallback(async (userData: SignupData): Promise<AuthResult> => {
     try {
       const response = await authAPI.signup(userData)
       const { token, username, email } = response.data
@@ -56,17 +56,22 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
       const axiosError = error as AxiosError<{ message?: string }>
       return { success: false, error: axiosError.response?.data?.message || 'Signup failed' }
     }
-  }
+  }, [])
 
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     localStorage.removeItem('token')
     localStorage.removeItem('username')
     localStorage.removeItem('email')
     setUser(null)
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({ user, login, signup, logout, loading }),
+    [user, login, signup, logout, loading]
+  )
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
