@@ -154,7 +154,7 @@ class VocabularyServiceTest {
     vocabularyService.createCard(request3, otherUser.getUsername());
 
     // When
-    List<VocabularyCardLeanResponse> responses = vocabularyService.getAllCards(user, null, null, null);
+    List<VocabularyCardLeanResponse> responses = vocabularyService.getAllCards(user.getUsername(), null, null, null);
 
     // Then
     assertThat(responses).hasSize(2);
@@ -169,6 +169,14 @@ class VocabularyServiceTest {
     assertThat(firstCard.getLanguageSelection()).isNotNull();
   }
 
+  @Test
+  @DisplayName("Given user not found, when get all cards, then should throw UserNotFoundException")
+  void givenUserNotFound_whenGetAllCards_thenShouldThrowException() {
+    // When & Then
+    assertThatThrownBy(() -> vocabularyService.getAllCards("nonexistent", null, null, null))
+        .isInstanceOf(UserNotFoundException.class)
+        .hasMessageContaining("User not found");
+  }
 
   @Test
   @DisplayName("Given username, when get due cards, then should return due cards")
