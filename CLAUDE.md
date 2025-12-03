@@ -50,6 +50,15 @@ npm run lint             # Run ESLint
 
 ## Key Features
 
+### Language Support
+Vocabulary cards support 10 bidirectional language pairs:
+- German ⇄ French, German ⇄ Spanish, German ⇄ Italian
+- English ⇄ Spanish, English ⇄ French, English ⇄ German, English ⇄ Italian
+- French ⇄ Spanish, French ⇄ Italian
+- Spanish ⇄ Italian
+
+Cards use a `languageSelection` enum field (e.g., `EN_ES`, `DE_FR`) that represents both learning directions.
+
 ### Spaced Repetition (SM-2 Algorithm)
 The application implements the SuperMemo SM-2 algorithm for optimal learning:
 
@@ -171,6 +180,16 @@ cd frontend
 npm run lint                          # ESLint
 ```
 
+### Code Quality & Coverage
+
+The project uses **SonarCloud** for continuous code quality and security analysis:
+- Multi-module analysis (backend + frontend)
+- Current backend test coverage: **81%**
+- Automated CI/CD integration via GitHub Actions
+- Coverage reports: JaCoCo (backend) + LCOV (frontend)
+
+📖 **For detailed SonarCloud configuration, see [backend/CLAUDE.md](backend/CLAUDE.md)**
+
 ## Database
 
 **Development** (H2 file-based):
@@ -196,7 +215,7 @@ npm run lint                          # ESLint
 
 **Backend won't start**:
 - Check port 8080 is available: `lsof -i :8080`
-- Verify Java 17 is installed: `java -version`
+- Verify Java 21 is installed: `java -version`
 - Check Maven dependencies: `mvn clean install`
 
 **Frontend won't start**:

@@ -23,6 +23,8 @@ public interface VocabularyRepository extends JpaRepository<VocabularyCard, Long
 
     long countByUserIdAndNextReviewBefore(Long userId, LocalDateTime now);
 
+    long countByUserId(Long userId);
+
     @Query("SELECT v FROM VocabularyCard v WHERE v.user.id = :userId " +
            "AND (LOWER(v.front) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
            "OR LOWER(v.back) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +

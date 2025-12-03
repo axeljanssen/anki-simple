@@ -154,6 +154,43 @@ class VocabularyControllerTest {
 
   @Test
   @WithMockUser(username = "testuser")
+  @DisplayName("Given user with cards, when get total count, then should return count")
+  void givenUserWithCards_whenGetTotalCount_thenShouldReturnCount() throws Exception {
+    // Given
+    VocabularyCard card1 = new VocabularyCard();
+    card1.setFront("Hello");
+    card1.setBack("Hola");
+    card1.setLanguageSelection(LanguageSelection.DE_ES);
+    card1.setUser(user);
+    vocabularyRepository.save(card1);
+
+    VocabularyCard card2 = new VocabularyCard();
+    card2.setFront("Goodbye");
+    card2.setBack("Adiós");
+    card2.setLanguageSelection(LanguageSelection.DE_FR);
+    card2.setUser(user);
+    vocabularyRepository.save(card2);
+
+    // When & Then
+    mockMvc.perform(get("/api/vocabulary/count"))
+      .andExpect(status().isOk())
+      .andExpect(content().string("2"));
+  }
+
+  @Test
+  @WithMockUser(username = "testuser")
+  @DisplayName("Given user with no cards, when get total count, then should return zero")
+  void givenUserWithNoCards_whenGetTotalCount_thenShouldReturnZero() throws Exception {
+    // Given - user exists but has no cards
+
+    // When & Then
+    mockMvc.perform(get("/api/vocabulary/count"))
+      .andExpect(status().isOk())
+      .andExpect(content().string("0"));
+  }
+
+  @Test
+  @WithMockUser(username = "testuser")
   @DisplayName("Given valid request, when update card, then should return 200")
   void givenValidRequest_whenUpdateCard_thenShouldReturn200() throws Exception {
     // Given

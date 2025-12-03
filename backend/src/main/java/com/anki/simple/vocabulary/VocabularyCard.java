@@ -67,7 +67,7 @@ public class VocabularyCard {
     )
     private Set<Tag> tags = new HashSet<>();
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "card", cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE}, orphanRemoval = true)
     private List<ReviewHistory> reviewHistories = new ArrayList<>();
 
     @PrePersist

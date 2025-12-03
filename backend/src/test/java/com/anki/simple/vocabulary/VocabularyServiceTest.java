@@ -226,6 +226,46 @@ class VocabularyServiceTest {
   }
 
   @Test
+  @DisplayName("Given user with cards, when get total count, then should return correct count")
+  void givenUserWithCards_whenGetTotalCount_thenShouldReturnCorrectCount() {
+    // Given - create 2 cards for user
+    vocabularyService.createCard(request, user.getUsername());
+
+    VocabularyCardRequest request2 = new VocabularyCardRequest();
+    request2.setFront("Goodbye");
+    request2.setBack("Adiós");
+    request2.setLanguageSelection(LanguageSelection.DE_ES);
+    vocabularyService.createCard(request2, user.getUsername());
+
+    // When
+    long count = vocabularyService.getTotalCount(user.getUsername());
+
+    // Then
+    assertThat(count).isEqualTo(2);
+  }
+
+  @Test
+  @DisplayName("Given user with no cards, when get total count, then should return zero")
+  void givenUserWithNoCards_whenGetTotalCount_thenShouldReturnZero() {
+    // Given - user exists but has no cards
+
+    // When
+    long count = vocabularyService.getTotalCount(user.getUsername());
+
+    // Then
+    assertThat(count).isEqualTo(0);
+  }
+
+  @Test
+  @DisplayName("Given non-existent user, when get total count, then should throw UserNotFoundException")
+  void givenNonExistentUser_whenGetTotalCount_thenShouldThrowException() {
+    // When & Then
+    assertThatThrownBy(() -> vocabularyService.getTotalCount("nonexistent"))
+        .isInstanceOf(UserNotFoundException.class)
+        .hasMessageContaining("User not found");
+  }
+
+  @Test
   @DisplayName("Given valid update request, when update card, then should update and return card")
   void givenValidUpdateRequest_whenUpdateCard_thenShouldUpdateAndReturnCard() {
     // Given - create a card

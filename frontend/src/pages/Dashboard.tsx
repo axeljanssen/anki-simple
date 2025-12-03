@@ -2,22 +2,21 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { vocabularyAPI } from '@/services/api'
-import type { VocabularyCard } from '@/types'
 import { AxiosError } from 'axios'
 
 const Dashboard = (): React.JSX.Element => {
-  const [cards, setCards] = useState<VocabularyCard[]>([])
+  const [totalCount, setTotalCount] = useState<number>(0)
   const [dueCount, setDueCount] = useState<number>(0)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const loadCards = async (): Promise<void> => {
+  const loadTotalCount = async (): Promise<void> => {
     try {
-      const response = await vocabularyAPI.getAll()
-      setCards(response.data)
+      const response = await vocabularyAPI.getTotalCount()
+      setTotalCount(response.data)
     } catch (error) {
       const axiosError = error as AxiosError
-      console.error('Failed to load cards:', axiosError)
+      console.error('Failed to load total count:', axiosError)
     }
   }
 
@@ -36,7 +35,7 @@ const Dashboard = (): React.JSX.Element => {
   }
 
   useEffect(() => {
-    loadCards()
+    loadTotalCount()
     loadDueCount()
   }, [])
 
@@ -60,7 +59,7 @@ const Dashboard = (): React.JSX.Element => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
           <div className="bg-white p-8 rounded-xl shadow-sm text-center">
             <h3 className="m-0 mb-4 text-gray-600 text-base font-medium">Total Cards</h3>
-            <p className="text-5xl font-bold text-gray-800 m-0">{cards.length}</p>
+            <p className="text-5xl font-bold text-gray-800 m-0">{totalCount}</p>
           </div>
           <div className="bg-white p-8 rounded-xl shadow-sm text-center">
             <h3 className="m-0 mb-4 text-gray-600 text-base font-medium">Cards Due</h3>

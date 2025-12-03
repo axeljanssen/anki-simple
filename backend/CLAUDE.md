@@ -37,9 +37,9 @@ src/main/java/com/anki/simple/
 ├── config/              # Configuration classes (SecurityConfig, etc.)
 ├── security/            # Security components (JWT, filters, user details)
 ├── user/                # User domain (entity, repository, service, controller)
-│   └── dto/            # User-related DTOs (AuthResponse, LoginRequest, SignupRequest)
+│   └── dto/            # User-related DTOs (AuthResponse, LoginRequest, SignupRequest, LeanUserInternal)
 ├── vocabulary/          # Vocabulary card domain
-│   └── dto/            # Vocabulary DTOs (VocabularyCardRequest, VocabularyCardResponse)
+│   └── dto/            # Vocabulary DTOs (VocabularyCardRequest, VocabularyCardResponse, VocabularyCardLeanResponse)
 ├── review/              # Review system and spaced repetition
 │   └── dto/            # Review DTOs (ReviewRequest, ReviewResponse)
 └── tag/                 # Tag system for organizing cards
@@ -215,6 +215,11 @@ public class VocabularyService {
 #### User Domain (user/)
 
 - **User** - Entity with username, email, password (BCrypt hashed)
+- **LeanUserInternal** - Internal lightweight user DTO
+  - Contains only: `id`, `username`
+  - Used for internal service-to-service communication
+  - Avoids exposing sensitive user data (email, password hash)
+  - Reduces memory footprint when user details needed for associations
 - **UserService** - User registration and management
 - **AuthController** - Endpoints: `/api/auth/signup`, `/api/auth/login`
 
@@ -222,13 +227,33 @@ public class VocabularyService {
 
 - **VocabularyCard** - Core entity with:
   - Card content: front, back, exampleSentence, audioUrl
-  - Languages: sourceLanguage, targetLanguage
+  - Language: languageSelection (LanguageSelection enum for bidirectional pairs)
   - SM-2 fields: easeFactor, intervalDays, repetitions, lastReviewed, nextReview
   - Relationships: ManyToOne with User, ManyToMany with Tag, OneToMany with ReviewHistory
 
+- **LanguageSelection** - Enum for bidirectional language pairs
+  - Replaces separate sourceLanguage/targetLanguage fields
+  - Supports 10 language pairs: DE_FR, DE_ES, EN_ES, EN_FR, EN_DE, FR_ES, EN_IT, DE_IT, FR_IT, ES_IT
+  - Each enum has displayName (e.g., "German ⇄ French")
+  - Stored as STRING in database (`@Enumerated(EnumType.STRING)` in `language_selection` column)
+  - Simplifies UI and ensures valid language combinations
+  - Example usage:
+    ```java
+    @Enumerated(EnumType.STRING)
+    @Column(name = "language_selection", length = 20)
+    private LanguageSelection languageSelection;
+    ```
+
+- **VocabularyCardLeanResponse** - Lightweight DTO for list views
+  - Contains only: `id`, `front`, `back`, `languageSelection`
+  - Used by `GET /api/vocabulary` endpoint for performance optimization
+  - Reduces payload size by excluding: tags, SM-2 data (easeFactor, intervalDays, etc.), timestamps, exampleSentence
+  - Significantly improves list loading performance, especially with large card collections
+  - Full card details fetched individually when editing
+
 - **VocabularyService** - CRUD operations for cards
 - **VocabularyController** - Endpoints:
-  - `GET /api/vocabulary` - Get all user's cards
+  - `GET /api/vocabulary` - Get all user's cards (returns `VocabularyCardLeanResponse[]` for performance)
   - `POST /api/vocabulary` - Create new card
   - `PUT /api/vocabulary/{id}` - Update card
   - `DELETE /api/vocabulary/{id}` - Delete card
@@ -279,8 +304,57 @@ public class VocabularyService {
 - Integration tests: @SpringBootTest with Testcontainers
 - Integration tests: avoid mocks and use m2 in-memory database for testing whenever possible.
 - Mock externals with WireMock
-- Minimum coverage: 80% for business logic 
+- Minimum coverage: 80% for business logic
 
+## Code Quality with SonarCloud
+
+The project uses SonarCloud for continuous code quality and security analysis.
+
+### Configuration
+
+**sonar-project.properties** (root):
+- Multi-module project setup (backend + frontend)
+- Java sources: `backend/src/main/java`
+- Test sources: `backend/src/test/java`
+- JaCoCo coverage reports: `backend/target/site/jacoco/jacoco.xml`
+- Project key: `axeljanssen_anki-simple`
+- Organization: `axeljanssen`
+
+### CI/CD Integration
+
+**GitHub Workflow** (`.github/workflows/sonarqube.yml`):
+- Triggers on: push to main/develop, pull requests
+- Steps:
+  1. Build backend with `mvn clean verify` (includes JaCoCo coverage)
+  2. Run backend tests with coverage
+  3. Install frontend dependencies
+  4. Run frontend tests with coverage
+  5. Upload results to SonarCloud
+
+### Coverage Reports
+
+- **Backend**: JaCoCo XML reports generated during `mvn verify`
+- **Frontend**: LCOV reports from Vitest coverage
+- **Current Coverage**: 81% backend test coverage achieved
+
+### Running SonarQube Locally
+
+```bash
+# Requires SONAR_TOKEN environment variable
+cd backend
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=axeljanssen_anki-simple \
+  -Dsonar.organization=axeljanssen \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.token=$SONAR_TOKEN
+```
+
+### Best Practices
+
+- Check SonarCloud dashboard before merging PRs
+- Address critical and high-severity issues
+- Maintain minimum 80% test coverage for business logic
+- Review security hotspots and vulnerabilities
 
 ## Database Configuration
 

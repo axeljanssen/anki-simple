@@ -50,6 +50,7 @@ export const vocabularyAPI = {
   getById: (id: number) => api.get<VocabularyCard>(`/vocabulary/${id}`),
   getDue: () => api.get<VocabularyCard[]>('/vocabulary/due'),
   getDueCount: () => api.get<number>('/vocabulary/due/count'),
+  getTotalCount: () => api.get<number>('/vocabulary/count'),
   create: (data: VocabularyFormData) => api.post<VocabularyCard>('/vocabulary', data),
   update: (id: number, data: VocabularyFormData) =>
     api.put<VocabularyCard>(`/vocabulary/${id}`, data),

@@ -52,6 +52,13 @@ public class VocabularyController {
         return ResponseEntity.ok(count);
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<Long> getTotalCardsCount(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        long count = vocabularyService.getTotalCount(userDetails.getUsername());
+        return ResponseEntity.ok(count);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<VocabularyCardResponse> getCard(
             @PathVariable Long id,

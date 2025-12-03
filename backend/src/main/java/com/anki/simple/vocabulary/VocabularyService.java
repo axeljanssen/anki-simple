@@ -7,10 +7,13 @@ import com.anki.simple.tag.Tag;
 import com.anki.simple.tag.TagRepository;
 import com.anki.simple.user.User;
 import com.anki.simple.user.UserRepository;
+import com.anki.simple.user.dto.LeanUserInternal;
 import com.anki.simple.vocabulary.dto.VocabularyCardLeanResponse;
 import com.anki.simple.vocabulary.dto.VocabularyCardRequest;
 import com.anki.simple.vocabulary.dto.VocabularyCardResponse;
 import com.anki.simple.vocabulary.mapper.VocabularyCardMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -30,9 +33,11 @@ public class VocabularyService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final VocabularyCardMapper vocabularyCardMapper;
+    private final EntityManager em;
 
     @Transactional
     public VocabularyCardResponse createCard(VocabularyCardRequest request, String username) {
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -50,8 +55,25 @@ public class VocabularyService {
 
     @Transactional(readOnly = true)
     public List<VocabularyCardLeanResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+
+
+
+//            User user = userRepository.findByUsername(username)
+//                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Query q = em.createNamedQuery("user_native_query_internal");
+         q.setParameter("username", username);
+         LeanUserInternal user;
+         try {
+             user = (LeanUserInternal) q.getSingleResult();
+         } catch (jakarta.persistence.NoResultException e) {
+             throw new UserNotFoundException("User not found");
+         }
+         if (user == null) {
+            throw new UserNotFoundException("User not found");
+         }
+
 
         List<VocabularyCard> cards;
 
@@ -95,6 +117,14 @@ public class VocabularyService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return vocabularyRepository.countByUserIdAndNextReviewBefore(user.getId(), LocalDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public long getTotalCount(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return vocabularyRepository.countByUserId(user.getId());
     }
 
     @Transactional(readOnly = true)

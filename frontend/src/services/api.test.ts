@@ -114,6 +114,15 @@ describe('API Service', () => {
       expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vocabulary/due/count')
     })
 
+    it('should get total count', async () => {
+      mockAxiosInstance.get.mockResolvedValue({ data: 10 })
+
+      const { vocabularyAPI } = await import('./api.ts')
+      await vocabularyAPI.getTotalCount()
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/vocabulary/count')
+    })
+
     it('should create a new vocabulary card', async () => {
       const mockCard = { front: 'Hello', back: 'Hola', exampleSentence: '', languageSelection: LanguageSelection.DE_FR, audioUrl: '', tagIds: [] }
       mockAxiosInstance.post.mockResolvedValue({ data: { id: 1, ...mockCard } })
