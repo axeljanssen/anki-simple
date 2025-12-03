@@ -4,6 +4,24 @@ import VocabularyList from './VocabularyList'
 import type { VocabularyCard } from '@/types'
 import { LanguageSelection } from '@/types'
 
+// Helper to create complete mock cards with all required properties
+const createMockCard = (overrides: Partial<VocabularyCard> = {}): VocabularyCard => ({
+  id: 1,
+  front: 'Test',
+  back: 'Prueba',
+  exampleSentence: null,
+  languageSelection: LanguageSelection.EN_ES,
+  audioUrl: null,
+  tags: [],
+  easeFactor: 2.5,
+  intervalDays: 1,
+  repetitions: 0,
+  nextReview: null,
+  createdAt: '2024-01-01T00:00:00',
+  updatedAt: '2024-01-01T00:00:00',
+  ...overrides,
+})
+
 describe('VocabularyList Component', () => {
   it('should display empty state when no cards are provided', () => {
     const mockOnEdit = vi.fn()
@@ -18,25 +36,23 @@ describe('VocabularyList Component', () => {
 
   it('should render list of vocabulary cards', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         exampleSentence: 'Hello, how are you?',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
         tags: [{ id: 1, name: 'Spanish', color: '#ff0000' }],
-      },
-      {
+      }),
+      createMockCard({
         id: 2,
         front: 'Goodbye',
         back: 'Adiós',
+        exampleSentence: null,
         languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.3,
         intervalDays: 3,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -53,16 +69,13 @@ describe('VocabularyList Component', () => {
 
   it('should display example sentence when provided', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         exampleSentence: 'Hello, how are you?',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -75,15 +88,12 @@ describe('VocabularyList Component', () => {
 
   it('should not display example sentence when not provided', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -96,15 +106,12 @@ describe('VocabularyList Component', () => {
 
   it('should display language badge when languages are provided', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -117,18 +124,16 @@ describe('VocabularyList Component', () => {
 
   it('should display tags when provided', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
         tags: [
           { id: 1, name: 'Spanish', color: '#ff0000' },
           { id: 2, name: 'Greetings', color: '#00ff00' },
         ],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -142,15 +147,14 @@ describe('VocabularyList Component', () => {
 
   it('should display card statistics', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.5,
         intervalDays: 3,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -163,15 +167,12 @@ describe('VocabularyList Component', () => {
 
   it('should call onEdit with card when edit button is clicked', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -187,15 +188,12 @@ describe('VocabularyList Component', () => {
 
   it('should call onDelete with card id when delete button is clicked', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -211,24 +209,20 @@ describe('VocabularyList Component', () => {
 
   it('should render multiple cards with correct actions', () => {
     const mockCards: VocabularyCard[] = [
-      {
+      createMockCard({
         id: 1,
         front: 'Hello',
         back: 'Hola',
         languageSelection: LanguageSelection.DE_ES,
-        easeFactor: 2.5,
-        intervalDays: 1,
-        tags: [],
-      },
-      {
+      }),
+      createMockCard({
         id: 2,
         front: 'Goodbye',
         back: 'Adiós',
         languageSelection: LanguageSelection.DE_ES,
         easeFactor: 2.3,
         intervalDays: 3,
-        tags: [],
-      },
+      }),
     ]
 
     const mockOnEdit = vi.fn()
@@ -242,10 +236,10 @@ describe('VocabularyList Component', () => {
     expect(editButtons).toHaveLength(2)
     expect(deleteButtons).toHaveLength(2)
 
-    fireEvent.click(editButtons[1])
+    fireEvent.click(editButtons[1]!)
     expect(mockOnEdit).toHaveBeenCalledWith(mockCards[1])
 
-    fireEvent.click(deleteButtons[0])
+    fireEvent.click(deleteButtons[0]!)
     expect(mockOnDelete).toHaveBeenCalledWith(1)
   })
 })

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, MouseEvent, ChangeEvent } from 'react'
+import React, { useState, useEffect, useCallback, MouseEvent, ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { vocabularyAPI, tagAPI } from '@/services/api'
@@ -23,12 +23,7 @@ const VocabularyTablePage = (): React.JSX.Element => {
   const sortDirection = searchParams.get('sortDirection') as SortDirection | null
   const searchTerm = searchParams.get('searchTerm') || ''
 
-  useEffect(() => {
-    loadCards()
-    loadTags()
-  }, [searchParams])
-
-  const loadCards = async (): Promise<void> => {
+  const loadCards = useCallback(async (): Promise<void> => {
     setLoading(true)
     try {
       const params = {
@@ -44,9 +39,9 @@ const VocabularyTablePage = (): React.JSX.Element => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [sortBy, sortDirection, searchTerm])
 
-  const loadTags = async (): Promise<void> => {
+  const loadTags = useCallback(async (): Promise<void> => {
     try {
       const response = await tagAPI.getAll()
       setTags(response.data)
@@ -54,7 +49,12 @@ const VocabularyTablePage = (): React.JSX.Element => {
       const axiosError = error as AxiosError
       console.error('Failed to load tags:', axiosError)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadCards()
+    loadTags()
+  }, [loadCards, loadTags])
 
   const handleSort = (field: SortableField): void => {
     const newParams = new URLSearchParams(searchParams)

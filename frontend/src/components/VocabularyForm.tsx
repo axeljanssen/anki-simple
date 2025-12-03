@@ -1,29 +1,53 @@
-import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import React, { useState, FormEvent, ChangeEvent } from 'react'
 import type { VocabularyFormProps, VocabularyFormData } from '@/types'
 import { LanguageSelection, LANGUAGE_SELECTION_LABELS } from '@/types'
 
 const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): React.JSX.Element => {
-  const [formData, setFormData] = useState<VocabularyFormData>({
-    front: '',
-    back: '',
-    exampleSentence: '',
-    languageSelection: LanguageSelection.DE_FR,
-    audioUrl: '',
-    tagIds: [],
-  })
-
-  useEffect(() => {
+  const [formData, setFormData] = useState<VocabularyFormData>(() => {
     if (card) {
-      setFormData({
+      return {
         front: card.front || '',
         back: card.back || '',
         exampleSentence: card.exampleSentence || '',
         languageSelection: card.languageSelection || LanguageSelection.DE_FR,
         audioUrl: card.audioUrl || '',
         tagIds: card.tags ? card.tags.map((t) => t.id) : [],
-      })
+      }
     }
-  }, [card])
+    return {
+      front: '',
+      back: '',
+      exampleSentence: '',
+      languageSelection: LanguageSelection.DE_FR,
+      audioUrl: '',
+      tagIds: [],
+    }
+  })
+  const [prevCardId, setPrevCardId] = useState<number | undefined>(card?.id)
+
+  // Reset form when switching between different cards
+  if (card?.id !== prevCardId) {
+    setPrevCardId(card?.id)
+    setFormData(
+      card
+        ? {
+            front: card.front || '',
+            back: card.back || '',
+            exampleSentence: card.exampleSentence || '',
+            languageSelection: card.languageSelection || LanguageSelection.DE_FR,
+            audioUrl: card.audioUrl || '',
+            tagIds: card.tags ? card.tags.map((t) => t.id) : [],
+          }
+        : {
+            front: '',
+            back: '',
+            exampleSentence: '',
+            languageSelection: LanguageSelection.DE_FR,
+            audioUrl: '',
+            tagIds: [],
+          }
+    )
+  }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault()

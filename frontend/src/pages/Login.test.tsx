@@ -4,8 +4,26 @@ import { BrowserRouter } from 'react-router-dom'
 import Login from './Login'
 import { AuthProvider } from '@/context/AuthContext'
 import { authAPI } from '@/services/api'
+import type { AuthResponse } from '@/types'
+import type { AxiosResponse } from 'axios'
 
-vi.mock('@/services/api')
+vi.mock('@/services/api', () => ({
+  authAPI: {
+    login: vi.fn(),
+    signup: vi.fn(),
+  },
+}))
+
+const mockedAuthAPI = vi.mocked(authAPI)
+
+// Helper to create mock AxiosResponse
+const createMockAxiosResponse = <T,>(data: T): AxiosResponse<T> => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as AxiosResponse['config'],
+})
 
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -57,15 +75,13 @@ describe('Login Component', () => {
   })
 
   it('should successfully login and navigate to dashboard', async () => {
-    const mockResponse = {
-      data: {
-        token: 'mock-token',
-        username: 'testuser',
-        email: 'test@example.com',
-      },
-    }
+    const mockResponse = createMockAxiosResponse<AuthResponse>({
+      token: 'mock-token',
+      username: 'testuser',
+      email: 'test@example.com',
+    })
 
-    authAPI.login.mockResolvedValue(mockResponse)
+    mockedAuthAPI.login.mockResolvedValue(mockResponse)
 
     renderLogin()
 
@@ -78,7 +94,7 @@ describe('Login Component', () => {
     fireEvent.click(loginButton)
 
     await waitFor(() => {
-      expect(authAPI.login).toHaveBeenCalledWith({
+      expect(mockedAuthAPI.login).toHaveBeenCalledWith({
         username: 'testuser',
         password: 'password123',
       })
@@ -95,7 +111,7 @@ describe('Login Component', () => {
       },
     }
 
-    authAPI.login.mockRejectedValue(mockError)
+    mockedAuthAPI.login.mockRejectedValue(mockError)
 
     renderLogin()
 
@@ -123,7 +139,7 @@ describe('Login Component', () => {
       },
     }
 
-    authAPI.login.mockRejectedValueOnce(mockError)
+    mockedAuthAPI.login.mockRejectedValueOnce(mockError)
 
     renderLogin()
 
@@ -141,13 +157,11 @@ describe('Login Component', () => {
     })
 
     // Second attempt
-    authAPI.login.mockResolvedValue({
-      data: {
-        token: 'mock-token',
-        username: 'testuser',
-        email: 'test@example.com',
-      },
-    })
+    mockedAuthAPI.login.mockResolvedValue(createMockAxiosResponse<AuthResponse>({
+      token: 'mock-token',
+      username: 'testuser',
+      email: 'test@example.com',
+    }))
 
     fireEvent.change(passwordInput, { target: { value: 'correctpassword' } })
     fireEvent.click(loginButton)

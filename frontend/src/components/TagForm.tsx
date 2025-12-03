@@ -1,23 +1,30 @@
-import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import React, { useState, FormEvent, ChangeEvent } from 'react'
 import type { TagFormProps, TagFormData } from '@/types'
 
 const TagForm = ({ tag, onSave, onCancel }: TagFormProps): React.JSX.Element => {
-  const [formData, setFormData] = useState<TagFormData>({
-    name: '',
-    color: '#3B82F6', // Default blue
-  })
-
-  // Edit mode: populate form when tag prop changes
-  useEffect(() => {
+  const [formData, setFormData] = useState<TagFormData>(() => {
     if (tag) {
-      setFormData({
+      return {
         name: tag.name,
         color: tag.color || '#3B82F6',
-      })
-    } else {
-      setFormData({ name: '', color: '#3B82F6' })
+      }
     }
-  }, [tag])
+    return {
+      name: '',
+      color: '#3B82F6', // Default blue
+    }
+  })
+  const [prevTagId, setPrevTagId] = useState<number | undefined>(tag?.id)
+
+  // Reset form when switching between different tags
+  if (tag?.id !== prevTagId) {
+    setPrevTagId(tag?.id)
+    setFormData(
+      tag
+        ? { name: tag.name, color: tag.color || '#3B82F6' }
+        : { name: '', color: '#3B82F6' }
+    )
+  }
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault()

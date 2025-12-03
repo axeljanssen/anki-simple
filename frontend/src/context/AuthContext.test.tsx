@@ -2,9 +2,26 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from './AuthContext'
 import { authAPI } from '@/services/api'
-import type { LoginCredentials, SignupData } from '@/types'
+import type { LoginCredentials, SignupData, AuthResponse } from '@/types'
+import type { AxiosResponse } from 'axios'
 
-vi.mock('@/services/api')
+vi.mock('@/services/api', () => ({
+  authAPI: {
+    login: vi.fn(),
+    signup: vi.fn(),
+  },
+}))
+
+const mockedAuthAPI = vi.mocked(authAPI)
+
+// Helper to create mock AxiosResponse
+const createMockAxiosResponse = <T,>(data: T): AxiosResponse<T> => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as AxiosResponse['config'],
+})
 
 describe('AuthContext', () => {
   beforeEach(() => {
@@ -49,15 +66,13 @@ describe('AuthContext', () => {
   describe('login', () => {
     it('should successfully login and set user data', async () => {
       const mockCredentials: LoginCredentials = { username: 'testuser', password: 'password123' }
-      const mockResponse = {
-        data: {
-          token: 'mock-token',
-          username: 'testuser',
-          email: 'test@example.com',
-        },
-      }
+      const mockResponse = createMockAxiosResponse<AuthResponse>({
+        token: 'mock-token',
+        username: 'testuser',
+        email: 'test@example.com',
+      })
 
-      authAPI.login.mockResolvedValue(mockResponse)
+      mockedAuthAPI.login.mockResolvedValue(mockResponse)
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -68,7 +83,7 @@ describe('AuthContext', () => {
         loginResult = await result.current.login(mockCredentials)
       })
 
-      expect(authAPI.login).toHaveBeenCalledWith(mockCredentials)
+      expect(mockedAuthAPI.login).toHaveBeenCalledWith(mockCredentials)
       expect(loginResult).toEqual({ success: true })
       expect(result.current.user).toEqual({
         username: 'testuser',
@@ -90,7 +105,7 @@ describe('AuthContext', () => {
         },
       }
 
-      authAPI.login.mockRejectedValue(mockError)
+      mockedAuthAPI.login.mockRejectedValue(mockError)
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -107,7 +122,7 @@ describe('AuthContext', () => {
 
     it('should handle login failure with default error message', async () => {
       const mockCredentials: LoginCredentials = { username: 'testuser', password: 'wrongpassword' }
-      authAPI.login.mockRejectedValue(new Error('Network error'))
+      mockedAuthAPI.login.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -129,15 +144,13 @@ describe('AuthContext', () => {
         email: 'newuser@example.com',
         password: 'password123',
       }
-      const mockResponse = {
-        data: {
-          token: 'mock-token',
-          username: 'newuser',
-          email: 'newuser@example.com',
-        },
-      }
+      const mockResponse = createMockAxiosResponse<AuthResponse>({
+        token: 'mock-token',
+        username: 'newuser',
+        email: 'newuser@example.com',
+      })
 
-      authAPI.signup.mockResolvedValue(mockResponse)
+      mockedAuthAPI.signup.mockResolvedValue(mockResponse)
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -148,7 +161,7 @@ describe('AuthContext', () => {
         signupResult = await result.current.signup(mockUserData)
       })
 
-      expect(authAPI.signup).toHaveBeenCalledWith(mockUserData)
+      expect(mockedAuthAPI.signup).toHaveBeenCalledWith(mockUserData)
       expect(signupResult).toEqual({ success: true })
       expect(result.current.user).toEqual({
         username: 'newuser',
@@ -174,7 +187,7 @@ describe('AuthContext', () => {
         },
       }
 
-      authAPI.signup.mockRejectedValue(mockError)
+      mockedAuthAPI.signup.mockRejectedValue(mockError)
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -195,7 +208,7 @@ describe('AuthContext', () => {
         email: 'newuser@example.com',
         password: 'password123',
       }
-      authAPI.signup.mockRejectedValue(new Error('Network error'))
+      mockedAuthAPI.signup.mockRejectedValue(new Error('Network error'))
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,

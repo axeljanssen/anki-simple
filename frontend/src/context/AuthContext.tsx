@@ -1,8 +1,9 @@
-import React, { createContext, useState, useContext, useEffect, useCallback, useMemo, ReactNode } from 'react'
+import React, { createContext, useState, useContext, useCallback, useMemo, ReactNode } from 'react'
 import { AxiosError } from 'axios'
 import { authAPI } from '@/services/api'
 import { User, LoginCredentials, SignupData, AuthContextValue, AuthResult } from '@/types'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
 interface AuthProviderProps {
@@ -10,19 +11,17 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element => {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-
-  useEffect(() => {
+  const [user, setUser] = useState<User | null>(() => {
     const token = localStorage.getItem('token')
     const username = localStorage.getItem('username')
     const email = localStorage.getItem('email')
 
     if (token && username && email) {
-      setUser({ username, email, token })
+      return { username, email, token }
     }
-    setLoading(false)
-  }, [])
+    return null
+  })
+  const loading = false
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResult> => {
     try {
@@ -77,6 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = (): AuthContextValue => {
   const context = useContext(AuthContext)
   if (!context) {

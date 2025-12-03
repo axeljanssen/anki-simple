@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vocabularyAPI, reviewAPI } from '@/services/api'
 import type { VocabularyCard } from '@/types'
@@ -12,7 +12,7 @@ const Review = (): React.JSX.Element => {
   const [loading, setLoading] = useState<boolean>(true)
   const navigate = useNavigate()
 
-  const loadDueCards = async (): Promise<void> => {
+  const loadDueCards = useCallback(async (): Promise<void> => {
     try {
       const response = await vocabularyAPI.getDue()
       setDueCards(response.data)
@@ -22,19 +22,22 @@ const Review = (): React.JSX.Element => {
       console.error('Failed to load due cards:', axiosError)
       setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    loadDueCards()
   }, [])
 
-  const handleReview = async (quality: number): Promise<void> => {
+  useEffect(() => {
+    // Load data on mount - legitimate use case for data fetching
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDueCards()
+  }, [loadDueCards])
+
+  const handleReview = async (quality: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> => {
     const currentCard = dueCards[currentIndex]
+    if (!currentCard) return
 
     try {
       await reviewAPI.review({
         cardId: currentCard.id,
-        quality: quality,
+        quality,
       })
 
       if (currentIndex < dueCards.length - 1) {
@@ -77,6 +80,11 @@ const Review = (): React.JSX.Element => {
   }
 
   const currentCard = dueCards[currentIndex]
+  if (!currentCard) {
+    navigate('/dashboard')
+    return <></>
+  }
+
   const progress = ((currentIndex + 1) / dueCards.length) * 100
 
   return (
