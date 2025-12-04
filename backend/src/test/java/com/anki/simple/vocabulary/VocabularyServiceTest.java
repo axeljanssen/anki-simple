@@ -401,4 +401,138 @@ class VocabularyServiceTest {
         .isInstanceOf(UserNotFoundException.class)
         .hasMessageContaining("User not found");
   }
+
+  @Test
+  @DisplayName("Given multiple cards, when getAllCards with sortBy front asc, then should return sorted cards")
+  void givenMultipleCards_whenGetAllCardsSortedByFrontAsc_thenShouldReturnSortedCards() {
+    // Given - create multiple cards with different front values
+    VocabularyCardRequest request1 = new VocabularyCardRequest();
+    request1.setFront("Zebra");
+    request1.setBack("Cebra");
+    request1.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request1, user.getUsername());
+
+    VocabularyCardRequest request2 = new VocabularyCardRequest();
+    request2.setFront("Apple");
+    request2.setBack("Manzana");
+    request2.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request2, user.getUsername());
+
+    VocabularyCardRequest request3 = new VocabularyCardRequest();
+    request3.setFront("Moon");
+    request3.setBack("Luna");
+    request3.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request3, user.getUsername());
+
+    // When - get all cards sorted by front ascending
+    List<VocabularyCardLeanResponse> result = vocabularyService.getAllCards(user.getUsername(), "front", "asc", null);
+
+    // Then - cards should be in alphabetical order
+    assertThat(result).hasSize(3);
+    assertThat(result.get(0).getFront()).isEqualTo("Apple");
+    assertThat(result.get(1).getFront()).isEqualTo("Moon");
+    assertThat(result.get(2).getFront()).isEqualTo("Zebra");
+  }
+
+  @Test
+  @DisplayName("Given multiple cards, when getAllCards with sortBy front desc, then should return reverse sorted cards")
+  void givenMultipleCards_whenGetAllCardsSortedByFrontDesc_thenShouldReturnReverseSortedCards() {
+    // Given - create multiple cards with different front values
+    VocabularyCardRequest request1 = new VocabularyCardRequest();
+    request1.setFront("Zebra");
+    request1.setBack("Cebra");
+    request1.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request1, user.getUsername());
+
+    VocabularyCardRequest request2 = new VocabularyCardRequest();
+    request2.setFront("Apple");
+    request2.setBack("Manzana");
+    request2.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request2, user.getUsername());
+
+    VocabularyCardRequest request3 = new VocabularyCardRequest();
+    request3.setFront("Moon");
+    request3.setBack("Luna");
+    request3.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request3, user.getUsername());
+
+    // When - get all cards sorted by front descending
+    List<VocabularyCardLeanResponse> result = vocabularyService.getAllCards(user.getUsername(), "front", "desc", null);
+
+    // Then - cards should be in reverse alphabetical order
+    assertThat(result).hasSize(3);
+    assertThat(result.get(0).getFront()).isEqualTo("Zebra");
+    assertThat(result.get(1).getFront()).isEqualTo("Moon");
+    assertThat(result.get(2).getFront()).isEqualTo("Apple");
+  }
+
+  @Test
+  @DisplayName("Given multiple cards, when getAllCards with searchTerm, then should return filtered cards")
+  void givenMultipleCards_whenGetAllCardsWithSearchTerm_thenShouldReturnFilteredCards() {
+    // Given - create multiple cards with different content
+    VocabularyCardRequest request1 = new VocabularyCardRequest();
+    request1.setFront("Hello");
+    request1.setBack("Hola");
+    request1.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request1, user.getUsername());
+
+    VocabularyCardRequest request2 = new VocabularyCardRequest();
+    request2.setFront("Goodbye");
+    request2.setBack("Adiós");
+    request2.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request2, user.getUsername());
+
+    VocabularyCardRequest request3 = new VocabularyCardRequest();
+    request3.setFront("World");
+    request3.setBack("Mundo");
+    request3.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request3, user.getUsername());
+
+    // When - search for "Hello"
+    List<VocabularyCardLeanResponse> result = vocabularyService.getAllCards(user.getUsername(), null, null, "Hello");
+
+    // Then - only matching card should be returned
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getFront()).isEqualTo("Hello");
+  }
+
+  @Test
+  @DisplayName("Given multiple cards, when getAllCards with search and sort, then should return filtered and sorted cards")
+  void givenMultipleCards_whenGetAllCardsWithSearchAndSort_thenShouldReturnFilteredAndSortedCards() {
+    // Given - create multiple cards
+    VocabularyCardRequest request1 = new VocabularyCardRequest();
+    request1.setFront("Zoo");
+    request1.setBack("Zoológico");
+    request1.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request1, user.getUsername());
+
+    VocabularyCardRequest request2 = new VocabularyCardRequest();
+    request2.setFront("Zebra");
+    request2.setBack("Cebra");
+    request2.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request2, user.getUsername());
+
+    VocabularyCardRequest request3 = new VocabularyCardRequest();
+    request3.setFront("Apple");
+    request3.setBack("Manzana");  // Contains "z" in "Manzana"
+    request3.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request3, user.getUsername());
+
+    VocabularyCardRequest request4 = new VocabularyCardRequest();
+    request4.setFront("Zone");
+    request4.setBack("Zona");
+    request4.setLanguageSelection(LanguageSelection.EN_ES);
+    vocabularyService.createCard(request4, user.getUsername());
+
+    // When - search for "Z" (case-insensitive) and sort by front ascending
+    // Search matches: Zoo (front), Zebra (front), Zone (front, back), Apple (back="Manzana")
+    List<VocabularyCardLeanResponse> result = vocabularyService.getAllCards(user.getUsername(), "front", "asc", "Z");
+
+    // Then - all 4 cards containing "Z" or "z" should be returned, sorted alphabetically by front
+    assertThat(result).hasSize(4);
+    assertThat(result.get(0).getFront()).isEqualTo("Apple");  // back contains "z" in "Manzana"
+    assertThat(result.get(1).getFront()).isEqualTo("Zebra");
+    assertThat(result.get(2).getFront()).isEqualTo("Zone");
+    assertThat(result.get(3).getFront()).isEqualTo("Zoo");
+  }
 }
