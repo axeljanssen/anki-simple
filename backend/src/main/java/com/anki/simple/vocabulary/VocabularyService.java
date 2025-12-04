@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VocabularyService {
 
+    public static final String USER_NOT_FOUND = "User not found";
     private final VocabularyRepository vocabularyRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
@@ -39,7 +40,7 @@ public class VocabularyService {
     public VocabularyCardResponse createCard(VocabularyCardRequest request, String username) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         VocabularyCard card = vocabularyCardMapper.toEntity(request);
         card.setUser(user);
@@ -60,7 +61,7 @@ public class VocabularyService {
 
 
 //            User user = userRepository.findByUsername(username)
-//                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+//                    .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         Query q = em.createNamedQuery("user_native_query_internal");
          q.setParameter("username", username);
@@ -68,10 +69,10 @@ public class VocabularyService {
          try {
              user = (LeanUserInternal) q.getSingleResult();
          } catch (jakarta.persistence.NoResultException e) {
-             throw new UserNotFoundException("User not found");
+             throw new UserNotFoundException(USER_NOT_FOUND);
          }
          if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException(USER_NOT_FOUND);
          }
 
 
@@ -103,7 +104,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public List<VocabularyCardResponse> getDueCards(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         return vocabularyRepository.findDueCards(user.getId(), LocalDateTime.now())
                 .stream()
@@ -114,7 +115,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public long getDueCardsCount(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         return vocabularyRepository.countByUserIdAndNextReviewBefore(user.getId(), LocalDateTime.now());
     }
@@ -122,7 +123,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public long getTotalCount(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         return vocabularyRepository.countByUserId(user.getId());
     }
@@ -130,7 +131,7 @@ public class VocabularyService {
     @Transactional(readOnly = true)
     public VocabularyCardResponse getCard(Long id, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         VocabularyCard card = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
@@ -145,7 +146,7 @@ public class VocabularyService {
     @Transactional
     public VocabularyCardResponse updateCard(Long id, VocabularyCardRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         VocabularyCard card = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
@@ -168,7 +169,7 @@ public class VocabularyService {
     @Transactional
     public void deleteCard(Long id, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         VocabularyCard card = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));

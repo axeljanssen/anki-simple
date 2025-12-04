@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TagService {
 
+    public static final String USER_NOT_FOUND = "User not found";
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
     private final TagMapper tagMapper;
@@ -27,7 +28,7 @@ public class TagService {
     @Transactional
     public TagResponse createTag(TagRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         if (tagRepository.findByNameAndUserId(request.getName(), user.getId()).isPresent()) {
             throw new TagAlreadyExistsException(request.getName());
@@ -43,7 +44,7 @@ public class TagService {
     @Transactional
     public TagResponse updateTag(Long id, TagRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(id));
@@ -70,7 +71,7 @@ public class TagService {
     @Transactional(readOnly = true)
     public List<TagResponse> getAllTags(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         return tagRepository.findByUserId(user.getId())
                 .stream()
@@ -81,7 +82,7 @@ public class TagService {
     @Transactional
     public void deleteTag(Long id, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
 
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(id));
