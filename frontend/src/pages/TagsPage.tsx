@@ -178,10 +178,22 @@ const TagsPage = (): React.JSX.Element => {
         <div
           className="form-modal-overlay fixed inset-0 bg-black/50 flex justify-center items-center z-[1000]"
           onClick={handleOverlayClick}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'Escape') {
+              handleCancel()
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close tag form"
         >
           <div
             className="bg-white rounded-lg p-8 max-w-[600px] w-[90%] max-h-[90vh] overflow-y-auto shadow-2xl animate-modal-slide max-md:w-[95%] max-md:p-5"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={editingTag ? 'Edit tag' : 'Create new tag'}
           >
             <TagForm tag={editingTag} onSave={handleSave} onCancel={handleCancel} />
           </div>

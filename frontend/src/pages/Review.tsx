@@ -325,10 +325,19 @@ const Review = (): React.JSX.Element => {
           <div
             className="fixed inset-0 bg-black/50 flex items-center justify-center p-5 z-50"
             onClick={() => setShowKeyboardHelp(false)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === 'Escape') {
+                setShowKeyboardHelp(false)
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close keyboard shortcuts help"
           >
             <div
               className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl animate-modal-slide"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e: React.KeyboardEvent) => e.stopPropagation()}
               role="dialog"
               aria-labelledby="keyboard-help-title"
               aria-modal="true"

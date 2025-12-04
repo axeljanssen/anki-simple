@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback, useMemo, ReactNode } from 'react'
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo, ReactNode } from 'react'
 import { AxiosError } from 'axios'
 import { authAPI } from '@/services/api'
 import { User, LoginCredentials, SignupData, AuthContextValue, AuthResult } from '@/types'
@@ -21,7 +21,14 @@ export const AuthProvider = ({ children }: AuthProviderProps): React.JSX.Element
     }
     return null
   })
-  const loading = false
+  const [loading, setLoading] = useState<boolean>(true)
+
+  // Initialize auth state on mount
+  useEffect(() => {
+    // Authentication is already initialized via useState above
+    // Set loading to false once initialization is complete
+    setLoading(false)
+  }, [])
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResult> => {
     try {
