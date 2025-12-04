@@ -25,7 +25,8 @@ mvn package
 - **Spring Data JPA** - Database access
 - **Spring Security** - Authentication & authorization
 - **JWT (jjwt 0.11.5)** - Token-based authentication
-- **H2 Database** - File-based database (development, persists in `~/.anki-simple/`)
+- **PostgreSQL 17** - Production database (port 5431)
+- **H2 Database** - In-memory database for tests only
 - **Flyway** - Database migration and versioning
 - **Lombok** - Reduce boilerplate code
 - **Maven** - Build tool
@@ -358,33 +359,40 @@ mvn clean verify sonar:sonar \
 
 ## Database Configuration
 
-### H2 File-Based Database
+### PostgreSQL Database
 
 Configuration in `application.properties`:
 ```properties
-spring.datasource.url=jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE
-spring.datasource.username=sa
-spring.datasource.password=
+spring.datasource.url=jdbc:postgresql://localhost:5431/ankidb
+spring.datasource.driverClassName=org.postgresql.Driver
+spring.datasource.username=ankidb
+spring.datasource.password=ankidb
+```
+
+**Setup**:
+```bash
+# Create the database and user (if they don't exist)
+psql -U postgres -p 5431 -c "CREATE USER ankidb WITH PASSWORD 'ankidb';"
+psql -U postgres -p 5431 -c "CREATE DATABASE ankidb OWNER ankidb;"
 ```
 
 **Features**:
-- Data persists between application restarts in `~/.anki-simple/` directory
-- AUTO_SERVER mode allows H2 console access while app is running
-- To reset database: Stop app, delete `~/.anki-simple/ankidb.mv.db`, restart app
+- PostgreSQL 17 running on port 5431
+- Database name: `ankidb`
+- Data persists in PostgreSQL data directory
+- Flyway automatically creates and migrates schema
+- To reset database: Drop and recreate the database
 
 **Test Configuration**:
 Tests use in-memory H2 for speed via `application-test.properties`:
 ```properties
 spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 ```
-Integration tests use `@ActiveProfiles("test")` annotation to load test config.
-
-### H2 Console
-
-Access at: `http://localhost:8080/h2-console`
-- JDBC URL: `jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE`
-- Username: `sa`
-- Password: (empty)
+Integration tests use `@ActiveProfiles("test")` annotation to load test config, which keeps tests fast and independent of PostgreSQL.
 
 ### JPA Configuration
 
@@ -428,8 +436,13 @@ touch src/main/resources/db/migration/V2__add_new_feature.sql
 - Use descriptive names for migrations
 - Test migrations on development database first
 
-### Main Tables
+### Database Schema
 
+Migration scripts in `src/main/resources/db/migration/`:
+- `V1__initial_schema.sql` - Initial schema (compatible with PostgreSQL and H2)
+- `V2__replace_language_fields_with_enum.sql` - Language selection migration
+
+**Main Tables**:
 - `users` - User accounts
 - `vocabulary_cards` - Vocabulary cards with SM-2 data
 - `tags` - Tags for organizing cards
@@ -524,15 +537,16 @@ mvn test jacoco:report
 
 **Debug database issues:**
 1. Check SQL logs in console (spring.jpa.show-sql=true)
-2. Use H2 console to inspect data: http://localhost:8080/h2-console
-3. Check Flyway migration history: `SELECT * FROM flyway_schema_history`
+2. Connect to PostgreSQL to inspect data: `psql -U ankidb -p 5431 -d ankidb`
+3. Check Flyway migration history: `SELECT * FROM flyway_schema_history;`
 4. Check entity relationships and cascade settings
 
 **Flyway troubleshooting:**
-1. View migration status: Check `flyway_schema_history` table in H2 console
-2. Failed migration: Fix the SQL, delete failed entry from history table, restart
+1. View migration status: `SELECT * FROM flyway_schema_history;` in PostgreSQL
+2. Failed migration: Fix the SQL, manually delete failed entry from history table, restart
 3. Schema mismatch: Ensure entity annotations match migration scripts
-4. Database persists in `~/.anki-simple/ankidb.mv.db` - delete file to reset
+4. To reset database: Drop and recreate `ankidb` database
+5. Tests use H2 in-memory database (no PostgreSQL needed)
 
 ### Security Considerations
 
@@ -542,13 +556,14 @@ mvn test jacoco:report
 - JWT secret is a placeholder
 
 **Production:**
-- Change JWT secret in application.properties:20
-- Disable H2 console
-- Use persistent database (PostgreSQL, MySQL)
+- Change JWT secret in application.properties
+- Update PostgreSQL credentials (use strong passwords)
+- Update database connection URL for production PostgreSQL server
 - Update CORS configuration for production domain
 - Enable HTTPS/TLS
 - Consider token refresh mechanism
 - Implement rate limiting
+- Use connection pooling (HikariCP is default in Spring Boot)
 
 ## Troubleshooting
 
@@ -573,12 +588,13 @@ mvn test -X
 ```
 
 **Database issues:**
-- Database persists in `~/.anki-simple/ankidb.mv.db`
-- To reset database: Stop backend, delete database file, restart
-- Use H2 console to inspect data while app is running (AUTO_SERVER mode)
+- Ensure PostgreSQL is running on port 5431
+- Verify database `ankidb` exists
+- Check database credentials in `application.properties`
+- Connect to PostgreSQL: `psql -U ankidb -p 5431 -d ankidb`
 - Check entity annotations and relationships
-- Verify application.properties database settings
-- Tests use in-memory H2 (see `application-test.properties`)
+- To reset database: Drop and recreate `ankidb` database
+- Tests use in-memory H2 (no PostgreSQL needed for tests)
 
 ## IDE Setup
 

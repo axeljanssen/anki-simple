@@ -35,7 +35,8 @@ npm run lint             # Run ESLint
 - **Spring Boot 3.4.1** with Java 21
 - **Layered architecture**: Controllers → Services → Repositories → Entities
 - **JWT authentication** with Spring Security
-- **H2 file-based database** for development (persists in `~/.anki-simple/`)
+- **PostgreSQL 17** database on port 5431
+- **H2 in-memory database** for tests only
 - **Domain modules**: `user`, `vocabulary`, `review`, `tag`
 - **RFC 7807 Problem Details** for error responses
 - **Comprehensive test suite** with 40+ tests
@@ -102,10 +103,9 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 ### Local Development URLs
 - **Backend API**: `http://localhost:8080/api`
 - **Frontend Dev Server**: `http://localhost:5173`
-- **H2 Database Console**: `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:file:~/.anki-simple/ankidb;AUTO_SERVER=TRUE`
-  - Username: `sa`
-  - Password: (empty)
+- **PostgreSQL Database**: `localhost:5431/ankidb`
+  - Username: `ankidb`
+  - Password: `ankidb`
 
 ### API Endpoints
 
@@ -129,7 +129,8 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 
 **Backend** (`application.properties`):
 - Server port: `8080`
-- Database: H2 file-based (persists in `~/.anki-simple/ankidb.mv.db`)
+- Database: PostgreSQL on port 5431, database name `ankidb`
+- Database credentials: username `ankidb`, password `ankidb`
 - JWT expiration: `86400000ms` (24 hours)
 - CORS allowed origin: `http://localhost:5173`
 
@@ -139,28 +140,34 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 **⚠️ Production Notes**:
 - Change JWT secret in `application.properties`
 - Update CORS configuration for production domain
-- Use persistent database (PostgreSQL, MySQL)
+- Update PostgreSQL credentials for production
 - Update frontend API_BASE_URL for production backend
 
 ## Development Workflow
 
 ### Starting the Application
 
-1. **Start Backend**:
+1. **Ensure PostgreSQL is running**:
+   - PostgreSQL 17 must be running on port 5431
+   - Database `ankidb` must exist
+   - Create database if needed: `CREATE DATABASE ankidb;`
+
+2. **Start Backend**:
    ```bash
    cd backend
    mvn spring-boot:run
    ```
    Backend runs on `http://localhost:8080`
+   Flyway will automatically create/migrate the database schema
 
-2. **Start Frontend**:
+3. **Start Frontend**:
    ```bash
    cd frontend
    npm run dev
    ```
    Frontend runs on `http://localhost:5173`
 
-3. **Access Application**:
+4. **Access Application**:
    - Open browser: `http://localhost:5173`
    - Sign up for a new account
    - Start creating vocabulary cards
@@ -192,11 +199,25 @@ The project uses **SonarCloud** for continuous code quality and security analysi
 
 ## Database
 
-**Development** (H2 file-based):
-- Data persists between application restarts in `~/.anki-simple/` directory
-- H2 console accessible while app is running (AUTO_SERVER mode)
-- To reset database: Stop app, delete `~/.anki-simple/ankidb.mv.db`, restart app
+**Development** (PostgreSQL 17):
+- PostgreSQL runs on port 5431
+- Database name: `ankidb`
+- Credentials: username `ankidb`, password `ankidb`
+- Data persists in PostgreSQL data directory
+- Flyway manages schema migrations automatically
+- To reset database: Drop and recreate the `ankidb` database
 - Tests use in-memory H2 for speed (see `application-test.properties`)
+
+**Setup PostgreSQL**:
+```bash
+# Create the database and user (if they don't exist)
+psql -U postgres -p 5431 -c "CREATE USER ankidb WITH PASSWORD 'ankidb';"
+psql -U postgres -p 5431 -c "CREATE DATABASE ankidb OWNER ankidb;"
+
+# Or connect to PostgreSQL and run:
+CREATE USER ankidb WITH PASSWORD 'ankidb';
+CREATE DATABASE ankidb OWNER ankidb;
+```
 
 **Main Tables**:
 - `users` - User accounts
@@ -234,14 +255,16 @@ The project uses **SonarCloud** for continuous code quality and security analysi
 - Check backend logs for JWT validation errors
 
 **Database issues**:
-- Database persists in `~/.anki-simple/ankidb.mv.db`
-- To reset database: Stop backend, delete database file, restart
-- Use H2 console to inspect data while app is running
+- Ensure PostgreSQL is running on port 5431
+- Verify database `ankidb` exists
+- Check database credentials match `application.properties`
 - Check entity annotations and relationships
-- Database file location is independent of project directory
+- To reset database: Drop and recreate `ankidb` database
+- Tests use in-memory H2 (no PostgreSQL needed for tests)
 
 ## Additional Resources
 
 - **Backend**: See [backend/CLAUDE.md](backend/CLAUDE.md)
 - **Frontend**: See [frontend/CLAUDE.md](frontend/CLAUDE.md)
 - **SM-2 Algorithm**: [SuperMemo Documentation](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2)
+- to memorize
