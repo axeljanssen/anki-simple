@@ -59,7 +59,7 @@ class TagControllerTest {
     String requestJson = "{\"name\":\"Greetings\",\"color\":\"#FF0000\"}";
 
     // When & Then
-    mockMvc.perform(post("/api/tags")
+    mockMvc.perform(post("/api/v1/tags")
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content(requestJson))
@@ -86,7 +86,7 @@ class TagControllerTest {
     tagRepository.save(tag2);
 
     // When & Then
-    mockMvc.perform(get("/api/tags"))
+    mockMvc.perform(get("/api/v1/tags"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$", hasSize(2)));
   }
@@ -103,7 +103,7 @@ class TagControllerTest {
     tag = tagRepository.save(tag);
 
     // When & Then
-    mockMvc.perform(delete("/api/tags/" + tag.getId())
+    mockMvc.perform(delete("/api/v1/tags/" + tag.getId())
         .with(csrf()))
       .andExpect(status().isNoContent());
   }

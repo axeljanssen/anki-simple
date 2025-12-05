@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/vocabulary")
+@RequestMapping("/api/v1/vocabulary")
 @RequiredArgsConstructor
 public class VocabularyController {
 

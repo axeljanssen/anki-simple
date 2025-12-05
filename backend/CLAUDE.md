@@ -210,7 +210,7 @@ public class VocabularyService {
 - **SecurityConfig** (config/SecurityConfig.java) - Security configuration
   - Configures JWT authentication
   - Sets up CORS for frontend (http://localhost:5173)
-  - Public endpoints: `/api/auth/**`, `/h2-console/**`
+  - Public endpoints: `/api/v1/auth/**`, `/h2-console/**`
   - All other endpoints require authentication
 
 #### User Domain (user/)
@@ -222,7 +222,7 @@ public class VocabularyService {
   - Avoids exposing sensitive user data (email, password hash)
   - Reduces memory footprint when user details needed for associations
 - **UserService** - User registration and management
-- **AuthController** - Endpoints: `/api/auth/signup`, `/api/auth/login`
+- **AuthController** - Endpoints: `/api/v1/auth/signup`, `/api/v1/auth/login`
 
 #### Vocabulary Domain (vocabulary/)
 
@@ -247,19 +247,19 @@ public class VocabularyService {
 
 - **VocabularyCardLeanResponse** - Lightweight DTO for list views
   - Contains only: `id`, `front`, `back`, `languageSelection`
-  - Used by `GET /api/vocabulary` endpoint for performance optimization
+  - Used by `GET /api/v1/vocabulary` endpoint for performance optimization
   - Reduces payload size by excluding: tags, SM-2 data (easeFactor, intervalDays, etc.), timestamps, exampleSentence
   - Significantly improves list loading performance, especially with large card collections
   - Full card details fetched individually when editing
 
 - **VocabularyService** - CRUD operations for cards
 - **VocabularyController** - Endpoints:
-  - `GET /api/vocabulary` - Get all user's cards (returns `VocabularyCardLeanResponse[]` for performance)
-  - `POST /api/vocabulary` - Create new card
-  - `PUT /api/vocabulary/{id}` - Update card
-  - `DELETE /api/vocabulary/{id}` - Delete card
-  - `GET /api/vocabulary/due` - Get cards due for review
-  - `GET /api/vocabulary/due/count` - Count of due cards
+  - `GET /api/v1/vocabulary` - Get all user's cards (returns `VocabularyCardLeanResponse[]` for performance)
+  - `POST /api/v1/vocabulary` - Create new card
+  - `PUT /api/v1/vocabulary/{id}` - Update card
+  - `DELETE /api/v1/vocabulary/{id}` - Delete card
+  - `GET /api/v1/vocabulary/due` - Get cards due for review
+  - `GET /api/v1/vocabulary/due/count` - Count of due cards
 
 #### Review Domain (review/)
 
@@ -275,7 +275,7 @@ public class VocabularyService {
 
 - **ReviewHistory** - Tracks each review session
 - **ReviewService** - Processes reviews and updates card schedules
-- **ReviewController** - Endpoint: `POST /api/review` (submits review with quality rating)
+- **ReviewController** - Endpoint: `POST /api/v1/review` (submits review with quality rating)
 
 #### Tag Domain (tag/)
 
@@ -453,8 +453,8 @@ Migration scripts in `src/main/resources/db/migration/`:
 
 ### Public Endpoints
 
-- `POST /api/auth/signup` - Register new user
-- `POST /api/auth/login` - Login and receive JWT token
+- `POST /api/v1/auth/signup` - Register new user
+- `POST /api/v1/auth/login` - Login and receive JWT token
 - `/h2-console/**` - H2 database console (development only)
 
 ### Protected Endpoints
@@ -467,7 +467,7 @@ Authorization: Bearer <jwt-token>
 
 ### Authentication Flow
 
-1. User registers via `/api/auth/signup` or logs in via `/api/auth/login`
+1. User registers via `/api/v1/auth/signup` or logs in via `/api/v1/auth/login`
 2. Backend validates credentials and returns JWT token in response
 3. Client includes token in `Authorization` header for subsequent requests
 4. `JwtAuthenticationFilter` validates token on each request
