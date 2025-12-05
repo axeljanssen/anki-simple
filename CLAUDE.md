@@ -35,19 +35,21 @@ npm run lint             # Run ESLint
 - **Spring Boot 3.4.1** with Java 21
 - **Layered architecture**: Controllers → Services → Repositories → Entities
 - **JWT authentication** with Spring Security
-- **PostgreSQL 17** database on port 5431
+- **PostgreSQL 17** database on port 5431 (credentials via environment variables)
 - **H2 in-memory database** for tests only
 - **Domain modules**: `user`, `vocabulary`, `review`, `tag`
 - **RFC 7807 Problem Details** for error responses
-- **Comprehensive test suite** with 40+ tests
+- **Comprehensive test suite** with 119 tests (93% coverage)
 
 ### Frontend
-- **React 18** with Vite
+- **React 19** with Vite 7
+- **TypeScript 5.7+** strict mode with path aliases
 - **React Router** for client-side routing
 - **Context API** for authentication state
 - **Axios** for API calls with JWT interceptor
 - **Protected routes** requiring authentication
-- **Pages**: Login, Signup, Dashboard, Review
+- **Pages**: Login, Signup, Dashboard, VocabularyTablePage, Review
+- **Comprehensive test coverage**: Review (25 tests), Login (5 tests), and more
 
 ## Key Features
 
@@ -104,8 +106,14 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 - **Backend API**: `http://localhost:8080/api`
 - **Frontend Dev Server**: `http://localhost:5173`
 - **PostgreSQL Database**: `localhost:5431/ankidb`
-  - Username: `ankidb`
-  - Password: `ankidb`
+  - Username: Set via `${ANKI_DB_USR}` environment variable
+  - Password: Set via `${ANKI_DB_PWD}` environment variable
+
+### Environment Variables (Required)
+```bash
+export ANKI_DB_USR=postgres
+export ANKI_DB_PWD=your_password
+```
 
 ### API Endpoints
 
@@ -130,7 +138,7 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 **Backend** (`application.properties`):
 - Server port: `8080`
 - Database: PostgreSQL on port 5431, database name `ankidb`
-- Database credentials: username `ankidb`, password `ankidb`
+- Database credentials: `${ANKI_DB_USR}` and `${ANKI_DB_PWD}` (environment variables)
 - JWT expiration: `86400000ms` (24 hours)
 - CORS allowed origin: `http://localhost:5173`
 
@@ -138,21 +146,29 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 - API base URL: `http://localhost:8080/api`
 
 **⚠️ Production Notes**:
+- Set production environment variables (`ANKI_DB_USR`, `ANKI_DB_PWD`)
 - Change JWT secret in `application.properties`
 - Update CORS configuration for production domain
-- Update PostgreSQL credentials for production
+- Use strong database password for production
 - Update frontend API_BASE_URL for production backend
+- Enable HTTPS/TLS
 
 ## Development Workflow
 
 ### Starting the Application
 
-1. **Ensure PostgreSQL is running**:
+1. **Set Environment Variables**:
+   ```bash
+   export ANKI_DB_USR=postgres
+   export ANKI_DB_PWD=your_password
+   ```
+
+2. **Ensure PostgreSQL is running**:
    - PostgreSQL 17 must be running on port 5431
    - Database `ankidb` must exist
    - Create database if needed: `CREATE DATABASE ankidb;`
 
-2. **Start Backend**:
+3. **Start Backend**:
    ```bash
    cd backend
    mvn spring-boot:run
@@ -160,14 +176,14 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
    Backend runs on `http://localhost:8080`
    Flyway will automatically create/migrate the database schema
 
-3. **Start Frontend**:
+4. **Start Frontend**:
    ```bash
    cd frontend
    npm run dev
    ```
    Frontend runs on `http://localhost:5173`
 
-4. **Access Application**:
+5. **Access Application**:
    - Open browser: `http://localhost:5173`
    - Sign up for a new account
    - Start creating vocabulary cards
@@ -191,7 +207,8 @@ npm run lint                          # ESLint
 
 The project uses **SonarCloud** for continuous code quality and security analysis:
 - Multi-module analysis (backend + frontend)
-- Current backend test coverage: **81%**
+- **Backend test coverage: 93%** (119 comprehensive tests)
+- **Frontend test coverage**: Comprehensive component tests (53+ tests)
 - Automated CI/CD integration via GitHub Actions
 - Coverage reports: JaCoCo (backend) + LCOV (frontend)
 
@@ -202,7 +219,7 @@ The project uses **SonarCloud** for continuous code quality and security analysi
 **Development** (PostgreSQL 17):
 - PostgreSQL runs on port 5431
 - Database name: `ankidb`
-- Credentials: username `ankidb`, password `ankidb`
+- Credentials: Set via `${ANKI_DB_USR}` and `${ANKI_DB_PWD}` environment variables
 - Data persists in PostgreSQL data directory
 - Flyway manages schema migrations automatically
 - To reset database: Drop and recreate the `ankidb` database

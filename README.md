@@ -14,7 +14,7 @@ A modern vocabulary learning application built with React 19 and Spring Boot 3, 
 - **Review System**: Interactive flashcard-style review interface with keyboard shortcuts
 - **Progress Tracking**: Real-time count of total cards and cards due for review
 - **Accessibility**: WCAG 2.1 compliant with full keyboard navigation support
-- **Code Quality**: Integrated SonarCloud analysis with 81% backend test coverage
+- **Code Quality**: Integrated SonarCloud analysis with 93% backend test coverage
 
 ## Technology Stack
 
@@ -26,7 +26,7 @@ A modern vocabulary learning application built with React 19 and Spring Boot 3, 
 - **ORM**: Spring Data JPA with Hibernate
 - **Migrations**: Flyway for database versioning
 - **Mapping**: MapStruct for DTO/entity conversions
-- **Testing**: JUnit 5, Mockito, 81% coverage
+- **Testing**: JUnit 5, Mockito, AssertJ, 93% coverage (119 tests)
 - **Build Tool**: Maven 3.9+
 
 ### Frontend
@@ -37,7 +37,7 @@ A modern vocabulary learning application built with React 19 and Spring Boot 3, 
 - **HTTP Client**: Axios with TypeScript support
 - **Styling**: Tailwind CSS 3.4.0 + Sass 1.94.0
 - **State Management**: Context API for authentication
-- **Testing**: Vitest 4 with React Testing Library
+- **Testing**: Vitest 4 with React Testing Library (comprehensive component tests)
 
 ## Project Structure
 
@@ -112,10 +112,16 @@ The backend will start on `http://localhost:8080`
 
 **Configuration** (`application.properties`):
 - Database: `jdbc:postgresql://localhost:5431/ankidb`
-- Username: `postgres`
-- Password: `postgres`
+- Username: `${ANKI_DB_USR}` (environment variable)
+- Password: `${ANKI_DB_PWD}` (environment variable)
 - JWT expiration: 24 hours
 - CORS allowed origin: `http://localhost:5173`
+
+**Environment Variables** (required):
+```bash
+export ANKI_DB_USR=postgres
+export ANKI_DB_PWD=your_password
+```
 
 ### Frontend Setup
 
@@ -284,11 +290,13 @@ Quality scale: 0-5 (0=blackout, 5=perfect)
 - JWT tokens with 24-hour expiration
 - CORS configured for `http://localhost:5173`
 - All endpoints except `/api/auth/**` are protected
-- Production checklist:
+- **Environment Variables**: Database credentials use `${ANKI_DB_USR}` and `${ANKI_DB_PWD}`
+- **Production checklist**:
+  - Set environment variables for database credentials
   - Change JWT secret in `application.properties`
-  - Update PostgreSQL credentials
   - Update CORS configuration for production domain
   - Enable HTTPS/TLS
+  - Use strong passwords for production database
 
 ## Testing
 
@@ -298,8 +306,13 @@ cd backend
 mvn test                    # Run all tests
 mvn test jacoco:report      # Generate coverage report
 ```
-- 40+ comprehensive tests
-- 81% code coverage
+- **119 comprehensive tests** covering all domains
+- **93% code coverage** (exceeds 80% target)
+- **Test coverage by domain**:
+  - GlobalExceptionHandler: 97% (11 tests)
+  - JwtAuthenticationFilter: 100% (7 tests)
+  - VocabularyService: 95% (24 tests including search/sort)
+  - ReviewService, TagService, UserService: 90%+ coverage
 - Integration tests use H2 in-memory database
 
 ### Frontend Tests
@@ -308,15 +321,26 @@ cd frontend
 npm test                    # Run tests
 npm run test:coverage       # Coverage report
 ```
-- Unit tests with Vitest
-- Component tests with React Testing Library
+- **Comprehensive component tests** with Vitest and React Testing Library
+- **Test suites**:
+  - Review.test.tsx: 25 tests (loading, cards, keyboard shortcuts, quality ratings)
+  - Login.test.tsx: 5 tests (authentication flow)
+  - VocabularyList.test.tsx: 10 tests (card display, editing)
+  - AuthContext.test.tsx: 10 tests (state management)
+  - ProtectedRoute.test.tsx: 3 tests (route guards)
+- Full coverage of user interactions and edge cases
 
 ## Code Quality
 
 - **SonarCloud**: Continuous code quality analysis
-- **Coverage**: Backend 81%, Frontend tracked
+- **Coverage**: Backend 93% (119 tests), Frontend comprehensive
 - **CI/CD**: GitHub Actions integration
 - **Reports**: JaCoCo (backend), LCOV (frontend)
+- **Code Standards**:
+  - Strict TypeScript mode
+  - MapStruct for type-safe mappings
+  - Environment variables for sensitive data
+  - WCAG 2.1 accessibility compliance
 
 ## Development Resources
 
