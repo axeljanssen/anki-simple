@@ -56,13 +56,6 @@ public class VocabularyService {
 
     @Transactional(readOnly = true)
     public List<VocabularyCardLeanResponse> getAllCards(String username, String sortBy, String sortDirection, String searchTerm) {
-
-
-
-
-//            User user = userRepository.findByUsername(username)
-//                    .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
-
         Query q = em.createNamedQuery("user_native_query_internal");
          q.setParameter("username", username);
          LeanUserInternal user;
