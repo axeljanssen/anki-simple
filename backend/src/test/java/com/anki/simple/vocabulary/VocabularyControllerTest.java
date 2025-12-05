@@ -71,7 +71,7 @@ class VocabularyControllerTest {
     String requestJson = "{\"front\":\"Hello\",\"back\":\"Hola\",\"languageSelection\":\"DE_ES\"}";
 
     // When & Then
-    mockMvc.perform(post("/api/vocabulary")
+    mockMvc.perform(post("/api/v1/vocabulary")
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content(requestJson))
@@ -101,7 +101,7 @@ class VocabularyControllerTest {
     vocabularyRepository.save(card2);
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary"))
+    mockMvc.perform(get("/api/v1/vocabulary"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$", hasSize(2)))
       .andExpect(jsonPath("$[0].id").exists())
@@ -128,7 +128,7 @@ class VocabularyControllerTest {
     vocabularyRepository.save(dueCard);
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/due"))
+    mockMvc.perform(get("/api/v1/vocabulary/due"))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$", hasSize(1)));
   }
@@ -147,7 +147,7 @@ class VocabularyControllerTest {
     vocabularyRepository.save(dueCard);
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/due/count"))
+    mockMvc.perform(get("/api/v1/vocabulary/due/count"))
       .andExpect(status().isOk())
       .andExpect(content().string("1"));
   }
@@ -172,7 +172,7 @@ class VocabularyControllerTest {
     vocabularyRepository.save(card2);
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/count"))
+    mockMvc.perform(get("/api/v1/vocabulary/count"))
       .andExpect(status().isOk())
       .andExpect(content().string("2"));
   }
@@ -184,7 +184,7 @@ class VocabularyControllerTest {
     // Given - user exists but has no cards
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/count"))
+    mockMvc.perform(get("/api/v1/vocabulary/count"))
       .andExpect(status().isOk())
       .andExpect(content().string("0"));
   }
@@ -204,7 +204,7 @@ class VocabularyControllerTest {
     String requestJson = "{\"front\":\"Hi\",\"back\":\"Hola\",\"languageSelection\":\"DE_ES\"}";
 
     // When & Then
-    mockMvc.perform(put("/api/vocabulary/" + card.getId())
+    mockMvc.perform(put("/api/v1/vocabulary/" + card.getId())
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content(requestJson))
@@ -225,7 +225,7 @@ class VocabularyControllerTest {
     card = vocabularyRepository.save(card);
 
     // When & Then
-    mockMvc.perform(delete("/api/vocabulary/" + card.getId())
+    mockMvc.perform(delete("/api/v1/vocabulary/" + card.getId())
         .with(csrf()))
       .andExpect(status().isNoContent());
   }
@@ -243,7 +243,7 @@ class VocabularyControllerTest {
     card = vocabularyRepository.save(card);
 
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/" + card.getId()))
+    mockMvc.perform(get("/api/v1/vocabulary/" + card.getId()))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.front").value("Hello"))
       .andExpect(jsonPath("$.back").value("Hola"))
@@ -255,7 +255,7 @@ class VocabularyControllerTest {
   @DisplayName("Given nonexistent card id, when get card by id, then should return 404")
   void givenNonexistentCardId_whenGetCardById_thenShouldReturn404() throws Exception {
     // When & Then
-    mockMvc.perform(get("/api/vocabulary/999"))
+    mockMvc.perform(get("/api/v1/vocabulary/999"))
       .andExpect(status().isNotFound())
       .andExpect(jsonPath("$.title").value("Card Not Found"));
   }

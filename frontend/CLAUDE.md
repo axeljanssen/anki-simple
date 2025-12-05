@@ -208,7 +208,7 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { AuthResponse, VocabularyCard, Tag, LoginCredentials, SignupData, VocabularyFormData, ReviewSubmission } from '@/types'
 
 // Base configuration
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = 'http://localhost:8080/api/v1'
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -420,7 +420,7 @@ Frontend test coverage is automatically uploaded to SonarCloud via GitHub Action
 
 Update API base URL in `services/api.ts` if backend runs on different port:
 ```typescript
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = 'http://localhost:8080/api/v1'
 ```
 
 ### Code Style

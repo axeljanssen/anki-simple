@@ -82,7 +82,7 @@ class ReviewControllerTest {
     String requestJson = "{\"cardId\":" + card.getId() + ",\"quality\":4}";
 
     // When & Then
-    mockMvc.perform(post("/api/review")
+    mockMvc.perform(post("/api/v1/review")
         .with(csrf())
         .contentType(MediaType.APPLICATION_JSON)
         .content(requestJson))

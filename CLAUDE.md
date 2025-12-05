@@ -80,7 +80,7 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 - **Implementation**: `SpacedRepetitionService` in backend
 
 ### Authentication Flow
-1. User signs up/logs in via `/api/auth/signup` or `/api/auth/login`
+1. User signs up/logs in via `/api/v1/auth/signup` or `/api/v1/auth/login`
 2. Backend validates credentials and returns JWT token
 3. Frontend stores token in localStorage
 4. Axios interceptor adds `Authorization: Bearer <token>` to all requests
@@ -89,11 +89,11 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 
 ### Review System Flow
 1. **Dashboard**: Shows count of cards due for review
-   - Calls `GET /api/vocabulary/due/count`
+   - Calls `GET /api/v1/vocabulary/due/count`
 2. **Review Page**: Fetches due cards
-   - Calls `GET /api/vocabulary/due`
+   - Calls `GET /api/v1/vocabulary/due`
 3. **User reviews card**: Submits quality rating (0-5)
-   - Calls `POST /api/review` with `cardId` and `quality`
+   - Calls `POST /api/v1/review` with `cardId` and `quality`
 4. **Backend processing**:
    - `SpacedRepetitionService` updates card schedule (SM-2 algorithm)
    - Saves updated card to database
@@ -103,7 +103,7 @@ The application implements the SuperMemo SM-2 algorithm for optimal learning:
 ## Quick Reference
 
 ### Local Development URLs
-- **Backend API**: `http://localhost:8080/api`
+- **Backend API**: `http://localhost:8080/api/v1`
 - **Frontend Dev Server**: `http://localhost:5173`
 - **PostgreSQL Database**: `localhost:5431/ankidb`
   - Username: Set via `${ANKI_DB_USR}` environment variable
@@ -122,16 +122,16 @@ export ANKI_DB_PWD=your_password
 - `POST /api/auth/login` - Authenticate user
 
 **Protected** (JWT token required):
-- `GET /api/vocabulary` - Get all user's cards
-- `POST /api/vocabulary` - Create new card
-- `PUT /api/vocabulary/:id` - Update card
-- `DELETE /api/vocabulary/:id` - Delete card
-- `GET /api/vocabulary/due` - Get cards due for review
-- `GET /api/vocabulary/due/count` - Get count of due cards
-- `POST /api/review` - Submit card review with quality rating
-- `GET /api/tags` - Get all user's tags
-- `POST /api/tags` - Create new tag
-- `DELETE /api/tags/:id` - Delete tag
+- `GET /api/v1/vocabulary` - Get all user's cards
+- `POST /api/v1/vocabulary` - Create new card
+- `PUT /api/v1/vocabulary/:id` - Update card
+- `DELETE /api/v1/vocabulary/:id` - Delete card
+- `GET /api/v1/vocabulary/due` - Get cards due for review
+- `GET /api/v1/vocabulary/due/count` - Get count of due cards
+- `POST /api/v1/review` - Submit card review with quality rating
+- `GET /api/v1/tags` - Get all user's tags
+- `POST /api/v1/tags` - Create new tag
+- `DELETE /api/v1/tags/:id` - Delete tag
 
 ### Configuration
 
@@ -143,7 +143,7 @@ export ANKI_DB_PWD=your_password
 - CORS allowed origin: `http://localhost:5173`
 
 **Frontend** (`services/api.js`):
-- API base URL: `http://localhost:8080/api`
+- API base URL: `http://localhost:8080/api/v1`
 
 **⚠️ Production Notes**:
 - Set production environment variables (`ANKI_DB_USR`, `ANKI_DB_PWD`)
@@ -284,4 +284,5 @@ CREATE DATABASE ankidb OWNER ankidb;
 - **Backend**: See [backend/CLAUDE.md](backend/CLAUDE.md)
 - **Frontend**: See [frontend/CLAUDE.md](frontend/CLAUDE.md)
 - **SM-2 Algorithm**: [SuperMemo Documentation](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2)
+- to memorize
 - to memorize

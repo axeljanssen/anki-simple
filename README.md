@@ -200,7 +200,7 @@ The application supports 10 bidirectional language pairs:
 
 ### Authentication (Public)
 
-**POST /api/auth/signup**
+**POST /api/v1/auth/signup**
 ```json
 {
   "username": "user123",
@@ -209,7 +209,7 @@ The application supports 10 bidirectional language pairs:
 }
 ```
 
-**POST /api/auth/login**
+**POST /api/v1/auth/login**
 ```json
 {
   "username": "user123",
@@ -228,7 +228,7 @@ The application supports 10 bidirectional language pairs:
 
 ### Vocabulary (Protected - requires JWT)
 
-**POST /api/vocabulary**
+**POST /api/v1/vocabulary**
 ```json
 {
   "front": "Hello",
@@ -240,15 +240,15 @@ The application supports 10 bidirectional language pairs:
 }
 ```
 
-**GET /api/vocabulary** - Get all cards (lean response for performance)
-**GET /api/vocabulary/due** - Get cards due for review
-**GET /api/vocabulary/due/count** - Get count of due cards
-**PUT /api/vocabulary/{id}** - Update card
-**DELETE /api/vocabulary/{id}** - Delete card
+**GET /api/v1/vocabulary** - Get all cards (lean response for performance)
+**GET /api/v1/vocabulary/due** - Get cards due for review
+**GET /api/v1/vocabulary/due/count** - Get count of due cards
+**PUT /api/v1/vocabulary/{id}** - Update card
+**DELETE /api/v1/vocabulary/{id}** - Delete card
 
 ### Review (Protected)
 
-**POST /api/review**
+**POST /api/v1/review**
 ```json
 {
   "cardId": 1,
@@ -260,9 +260,9 @@ Quality scale: 0-5 (0=blackout, 5=perfect)
 
 ### Tags (Protected)
 
-**GET /api/tags** - Get all user's tags
-**POST /api/tags** - Create new tag
-**DELETE /api/tags/{id}** - Delete tag
+**GET /api/v1/tags** - Get all user's tags
+**POST /api/v1/tags** - Create new tag
+**DELETE /api/v1/tags/{id}** - Delete tag
 
 ## Database
 
@@ -289,7 +289,7 @@ Quality scale: 0-5 (0=blackout, 5=perfect)
 - Passwords encrypted using BCrypt
 - JWT tokens with 24-hour expiration
 - CORS configured for `http://localhost:5173`
-- All endpoints except `/api/auth/**` are protected
+- All endpoints except `/api/v1/auth/**` are protected
 - **Environment Variables**: Database credentials use `${ANKI_DB_USR}` and `${ANKI_DB_PWD}`
 - **Production checklist**:
   - Set environment variables for database credentials

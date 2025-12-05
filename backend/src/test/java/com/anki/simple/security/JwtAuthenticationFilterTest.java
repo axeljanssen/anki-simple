@@ -51,7 +51,7 @@ class JwtAuthenticationFilterTest {
 
   @Test
   void doFilterInternal_withValidToken_shouldAuthenticate() throws Exception {
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", "Bearer " + validToken))
         .andExpect(status().isOk());
   }
@@ -62,7 +62,7 @@ class JwtAuthenticationFilterTest {
     // Spring Security catches this and returns 403 Forbidden
     String invalidToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlciJ9.invalid_signature";
 
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", "Bearer " + invalidToken))
         .andExpect(status().isForbidden());
   }
@@ -73,7 +73,7 @@ class JwtAuthenticationFilterTest {
     // This will fail validation and result in no authentication
     String wrongUserToken = jwtUtil.generateToken("wronguser");
 
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", "Bearer " + wrongUserToken))
         .andExpect(status().isForbidden());
   }
@@ -81,7 +81,7 @@ class JwtAuthenticationFilterTest {
   @Test
   void doFilterInternal_withMalformedToken_shouldReturn403() throws Exception {
     // Malformed token that doesn't match JWT format
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", "Bearer malformed"))
         .andExpect(status().isForbidden());
   }
@@ -89,14 +89,14 @@ class JwtAuthenticationFilterTest {
   @Test
   void doFilterInternal_withoutToken_shouldReturn403() throws Exception {
     // No Authorization header - Spring Security returns 403 Forbidden
-    mockMvc.perform(get("/api/vocabulary"))
+    mockMvc.perform(get("/api/v1/vocabulary"))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void doFilterInternal_withoutBearerPrefix_shouldReturn403() throws Exception {
     // Authorization header without "Bearer " prefix
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", validToken))
         .andExpect(status().isForbidden());
   }
@@ -104,7 +104,7 @@ class JwtAuthenticationFilterTest {
   @Test
   void doFilterInternal_withEmptyAuthorizationHeader_shouldReturn403() throws Exception {
     // Empty Authorization header
-    mockMvc.perform(get("/api/vocabulary")
+    mockMvc.perform(get("/api/v1/vocabulary")
             .header("Authorization", ""))
         .andExpect(status().isForbidden());
   }

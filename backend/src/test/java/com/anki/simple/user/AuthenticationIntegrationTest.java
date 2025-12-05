@@ -48,7 +48,7 @@ class AuthenticationIntegrationTest {
     request.setPassword("password123");
 
     // When & Then
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -69,7 +69,7 @@ class AuthenticationIntegrationTest {
     firstRequest.setEmail("first@example.com");
     firstRequest.setPassword("password123");
 
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(firstRequest)));
 
@@ -80,7 +80,7 @@ class AuthenticationIntegrationTest {
     duplicateRequest.setPassword("password123");
 
     // Then
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(duplicateRequest)))
         .andExpect(status().isConflict())
@@ -98,7 +98,7 @@ class AuthenticationIntegrationTest {
     firstRequest.setEmail("duplicate@example.com");
     firstRequest.setPassword("password123");
 
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(firstRequest)));
 
@@ -109,7 +109,7 @@ class AuthenticationIntegrationTest {
     duplicateRequest.setPassword("password123");
 
     // Then
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(duplicateRequest)))
         .andExpect(status().isConflict())
@@ -127,7 +127,7 @@ class AuthenticationIntegrationTest {
     signupRequest.setEmail("login@example.com");
     signupRequest.setPassword("password123");
 
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(signupRequest)));
 
@@ -137,7 +137,7 @@ class AuthenticationIntegrationTest {
     loginRequest.setPassword("password123");
 
     // Then
-    mockMvc.perform(post("/api/auth/login")
+    mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isOk())
@@ -155,7 +155,7 @@ class AuthenticationIntegrationTest {
     signupRequest.setEmail("test@example.com");
     signupRequest.setPassword("correctpassword");
 
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(signupRequest)));
 
@@ -165,7 +165,7 @@ class AuthenticationIntegrationTest {
     loginRequest.setPassword("wrongpassword");
 
     // Then
-    mockMvc.perform(post("/api/auth/login")
+    mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isUnauthorized());
@@ -180,7 +180,7 @@ class AuthenticationIntegrationTest {
     loginRequest.setPassword("password123");
 
     // When & Then
-    mockMvc.perform(post("/api/auth/login")
+    mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isUnauthorized());
@@ -196,7 +196,7 @@ class AuthenticationIntegrationTest {
     signupRequest.setPassword("password123");
 
     // When - signup
-    String signupResponse = mockMvc.perform(post("/api/auth/signup")
+    String signupResponse = mockMvc.perform(post("/api/v1/auth/signup")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(signupRequest)))
         .andExpect(status().isOk())
@@ -214,7 +214,7 @@ class AuthenticationIntegrationTest {
     loginRequest.setUsername("flowuser");
     loginRequest.setPassword("password123");
 
-    String loginResponse = mockMvc.perform(post("/api/auth/login")
+    String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isOk())
@@ -236,7 +236,7 @@ class AuthenticationIntegrationTest {
     // Missing username, email, and password
 
     // When & Then
-    mockMvc.perform(post("/api/auth/signup")
+    mockMvc.perform(post("/api/v1/auth/signup")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
