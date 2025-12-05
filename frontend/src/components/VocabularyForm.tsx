@@ -152,7 +152,7 @@ const VocabularyForm = ({ card, tags, onSave, onCancel }: VocabularyFormProps): 
 
         {tags && tags.length > 0 && (
           <div className="mb-5">
-            <label className="block mb-2 text-gray-600 font-medium text-sm">Tags</label>
+            <div className="block mb-2 text-gray-600 font-medium text-sm">Tags</div>
             <div className="flex flex-wrap gap-3">
               {tags.map((tag) => (
                 <label key={tag.id} className="flex items-center cursor-pointer">

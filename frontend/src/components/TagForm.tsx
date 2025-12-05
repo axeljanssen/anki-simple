@@ -79,7 +79,7 @@ const TagForm = ({ tag, onSave, onCancel }: TagFormProps): React.JSX.Element => 
         </div>
 
         <div className="mb-5">
-          <label className="block mb-2 text-gray-600 font-medium text-sm">Preview</label>
+          <div className="block mb-2 text-gray-600 font-medium text-sm">Preview</div>
           <span
             className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white"
             style={{ backgroundColor: formData.color }}
